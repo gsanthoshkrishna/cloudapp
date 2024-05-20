@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Drag and Drop Images with Keyboard Delete</title>
+<style>
+    #image-container,
+    #drop-container {
+        border: 2px dashed #aaa;
+        padding: 20px;
+        margin: 20px;
+        min-height: 100px;
+    }
+
+    .image-wrapper {
+        position: relative;
+        display: inline-block;
+    }
+
+    img {
+        max-width: 100px;
+        max-height: 100px;
+        margin: 5px;
+        cursor: pointer;
+    }
+
+    .selected {
+        border: 2px solid blue;
+    }
+</style>
+</head>
+<body>
+
+<div id="image-container">
+    <img src="rose.jpeg" draggable="true" ondragstart="drag(event)">
+    <img src="lilly.jpeg" draggable="true" ondragstart="drag(event)">
+    <img src="marigold.jpeg" draggable="true" ondragstart="drag(event)">
+</div>
+
+<div id="drop-container" ondrop="drop(event)" ondragover="allowDrop(event)">
+    Drop Here
+</div>
+
+<script>
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Delete') {
+        let selectedImages = document.querySelectorAll('.selected');
+        selectedImages.forEach(image => {
+            image.parentElement.removeChild(image);
+        });
+    }
+});
+
+function allowDrop(event) {
+    event.preventDefault();
+}
+
+function drag(event) {
+    event.dataTransfer.setData("text", event.target.src);
+}
+
+function drop(event) {
+    event.preventDefault();
+    var data = event.dataTransfer.getData("text");
+
+    var wrapper = document.createElement('div');
+    wrapper.className = 'image-wrapper';
+
+    var img = new Image();
+    img.src = data;
+    img.style.maxWidth = "100px";
+    img.style.maxHeight = "100px";
+    img.style.margin = "5px";
+    img.style.cursor = "pointer";
+    img.onclick = function() {
+        img.classList.toggle('selected');
+    };
+    wrapper.appendChild(img);
+
+    document.getElementById('drop-container').appendChild(wrapper);
+}
+</script>
+
+</body>
+</html>
