@@ -1,0 +1,27 @@
+
+Terraform nessesary fields for azure vm???
+
+Resource Group:---- The Azure resource group where the VM will be deployed.
+Virtual Machine:---- Configuration details for the virtual machine itself, including its name, size, operating system image, and networking details.
+Network Interface:---- Configuration for the network interface associated with the VM, including IP configuration and subnet details.
+Storage Account:--- Configuration for the storage account used by the VM, including the OS disk and any data disks.
+Availability Set (optional):---- If you want to deploy the VM into an availability set for high availability.
+Security Groups (optional):---- Configuration for network security groups to control traffic to and from the VM.
+Tags:---- Optional metadata tags to apply to the Azure resources.
+
+
+
+
+mandatory fields for Azure resource group??
+
+name:--- This is the name of the resource group. It must be unique within your Azure subscription.
+location:--- This is the Azure region where the resource group will be created. Azure resources within the group are deployed to this location.
+
+
+mandatory fields for Azure storage account?
+
+name:-- This is the name of the storage account. It must be unique within Azure.
+resource_group_name:--- This is the name of the resource group in which the storage account will be created.
+location:--- This is the Azure region where the storage account will be created.
+account_tier:--- This specifies the storage account tier. Valid values are "Standard" or "Premium".
+account_replication_type:--- This specifies the replication type for the storage account. Valid values are "LRS" (Locally Redundant Storage), "GRS" (Geo-Redundant Storage), "ZRS" (Zone-Redundant Storage), or "RAGRS" (Read-Access Geo-Redundant Storage).

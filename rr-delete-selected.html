@@ -19,6 +19,10 @@
         margin: 5px;
         cursor: pointer;
     }
+
+    .highlighted {
+        border: 2px solid red; /* Change the border color or add any other style to highlight */
+    }
 </style>
 </head>
 <body>
@@ -33,9 +37,12 @@
     Drop Here
 </div>
 
-<button onclick="deleteImage()">Delete </button>
+<button onclick="markForDeletion()">Mark Image for Deletion</button>
+<button onclick="deleteImage()">Delete Marked Image</button>
 
 <script>
+var markedImage = null;
+
 function allowDrop(event) {
     event.preventDefault();
 }
@@ -53,14 +60,31 @@ function drop(event) {
     img.style.maxHeight = "100px";
     img.style.margin = "5px";
     img.style.cursor = "pointer";
+    img.addEventListener("click", function() {
+        markForDeletion(this);
+    });
     document.getElementById("drop-container").appendChild(img);
 }
+
+function markForDeletion(image) {
+    // Remove highlighting from previously marked image
+    if (markedImage) {
+        markedImage.classList.remove("highlighted");
+    }
+
+    // Highlight the selected image
+    image.classList.add("highlighted");
+    markedImage = image;
+}
+
 function deleteImage() {
-  var dropBox = document.getElementById("drop-container");
-  while (dropBox.firstChild) {
-    dropBox.removeChild(dropBox.firstChild);
-  }
-}  
+    if (markedImage) {
+        markedImage.parentNode.removeChild(markedImage);
+        markedImage = null;
+    } else {
+        alert("No image is marked for deletion.");
+    }
+}
 </script>
 
 </body>

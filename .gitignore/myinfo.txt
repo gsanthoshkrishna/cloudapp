@@ -1,0 +1,14 @@
+chatgpt command :
+what is the terraform resource name for azure vm
+response: azurerm_virtual_machine
+
+what are the mandatory fields in terraform resource azurerm_virtual_machine
+    In Terraform, the azurerm_virtual_machine resource allows you to define and manage Azure Virtual Machines. While not all fields are mandatory, there are certain required fields that must be specified to create a valid Azure VM resource. These mandatory fields typically include:
+
+    name: Specifies the name of the virtual machine.
+    location: Specifies the Azure region where the virtual machine will be created.
+    resource_group_name: Specifies the name of the resource group in which to create the virtual machine.
+    vm_size: Specifies the size of the virtual machine. This determines the hardware specifications, such as the number of CPUs and amount of memory.
+    storage_image_reference: Specifies the details of the operating system image to use for the virtual machine. This includes properties such as publisher, offer, SKU, and version.
+    os_profile: Specifies the operating system profile configuration for the virtual machine, including the computer name, admin username, and authentication method (e.g., SSH public key or password).
+    network_interface_ids: Specifies the list of network interface IDs that are attached to the virtual machine.
