@@ -1,0 +1,7 @@
+database name=gowri1
+
+CREATE TABLE res_prop_list_value(id int,res_prop_id int,prop_type varchar(30),list_value varchar(30));
+
+CREATE TABLE resource_Table(res_id int,res_name varchar(30),res_image varchar(30));
+
+CREATE TABLE resourse_prop(res_prop_id int,res_id int,prop_name varchar(30),prop_input_type varchar(30),is_mandatory varchar(30));
