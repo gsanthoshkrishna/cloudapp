@@ -40,11 +40,11 @@
 </head>
 <body>
 
-    <div id="image-container">
-        {% for img in resources %}
-         <img src="/static/images/{{img.res_img}}" draggable="true" ondragstart="drag(event)" alt="{{img.res_name}}">
-        {% endfor %}
-     </div>
+<div id="image-container">
+    {% for imge in resources %}
+<img src="/static/{{ imge[2] }}" draggable="true" ondragstart="drag(event)" alt="{{ imge[1] }}">
+    {% endfor %}
+</div>
 
 <div id="drop-container" ondrop="drop(event)" ondragover="allowDrop(event)">
     Drop Here
