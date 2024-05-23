@@ -41,7 +41,9 @@
 <body>
 
 <div id="image-container">
-    
+    {% for res in resources %}
+<img src="/static/{{ res[2] }}" >
+    {% endfor %}
 </div>
 
 <div id="drop-container" ondrop="drop(event)" ondragover="allowDrop(event)">
