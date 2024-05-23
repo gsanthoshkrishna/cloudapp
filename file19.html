@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Combined Functionality</title>
+<style>
+    /* Styles for drag and drop functionality */
+    #image-container,
+    #prop-container,
+    #drop-container {
+        border: 1px solid black;
+        box-sizing: border-box;
+        float: left;
+        height: 700px; /* Increased height */
+        min-height: 100px;
+    }
+
+    .image-wrapper {
+        position: relative;
+        display: inline-block;
+    }
+
+    img {
+        max-width: 100px;
+        max-height: 100px;
+        margin: 5px;
+        cursor: pointer;
+    }
+
+    .delete-btn {
+        position: absolute;
+        top: 0;
+        right: 0;
+        background-color: red;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    /* Styles for containers with percentage widths and light colors */
+    .container {
+        border: 1px solid black;
+        box-sizing: border-box;
+        float: left;
+        height: 700px; /* Increased height */
+    }
+
+    .container-1 {
+        width: 20%;
+        background-color: #FADBD8; /* Light red */
+    }
+
+    .container-2 {
+        width: 50%;
+        background-color: #D1F2EB; /* Light green */
+    }
+
+    .container-3 {
+        width: 30%;
+        background-color: #FCF3CF; /* Light yellow */
+    }
+</style>
+</head>
+<body>
+
+<!-- Drag and drop functionality -->
+
+<!-- Containers with percentage widths and light colors -->
+<div class="container container-1" id="drag-container">
+    <img src="rose.jpeg" draggable="true" ondragstart="drag(event)">
+    <img src="lilly.jpeg">
+</div>
+<div class="container container-2" id="drop-container" ondrop="drop(event)" ondragover="allowDrop(event)">
+
+</div>
+<div class="container container-3" id="prop-container">
+
+</div>
+
+
+<script>
+    function allowDrop(event) {
+        event.preventDefault();
+    }
+    
+    function drag(event) {
+        event.dataTransfer.setData("text", event.target.src);
+    }
+    
+    function drop(event) {
+        event.preventDefault();
+        var data = event.dataTransfer.getData("text");
+    
+        var wrapper = document.createElement('div');
+        wrapper.className = 'image-wrapper';
+    
+        var img = new Image();
+        img.src = data;
+        img.style.maxWidth = "100px";
+        img.style.maxHeight = "100px";
+        img.style.margin = "5px";
+        img.style.cursor = "pointer";
+        wrapper.appendChild(img);
+    
+        var deleteBtn = document.createElement('button');
+        deleteBtn.className = 'delete-btn';
+        deleteBtn.innerHTML = 'X';
+        deleteBtn.onclick = function() {
+            document.getElementById('drop-container').removeChild(wrapper);
+        };
+        wrapper.appendChild(deleteBtn);
+    
+        document.getElementById('drop-container').appendChild(wrapper);
+    }
+    </script>
+</body>
+</html>
