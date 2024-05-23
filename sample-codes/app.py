@@ -33,7 +33,7 @@ def student_details():
     cursor.execute("SELECT * FROM students WHERE name = %s", (student_name,))
     student = cursor.fetchone()
 
-    return render_template('student_details.html', student=student)
+    return render_template('index.html', student=student)
 
 if __name__ == '__main__':
     app.run(debug=True)
