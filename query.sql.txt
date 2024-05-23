@@ -1,7 +1,23 @@
-database name=gowri1
+CREATE DATABASE cloudapp;
+USE cloudapp;
+CREATE TABLE resource (
+    res_id INT PRIMARY KEY,
+    res_name VARCHAR(30),
+    res_image VARCHAR(30)
+);
+CREATE TABLE resource_prop (
+    res_prop_id INT PRIMARY KEY,
+    res_id INT,
+    prop_name VARCHAR(30),
+    prop_input_type VARCHAR(30),
+    is_mandatory VARCHAR(30),
+    FOREIGN KEY (res_id) REFERENCES resource(res_id)
+);
 
-CREATE TABLE res_prop_list_value(id int,res_prop_id int,prop_type varchar(30),list_value varchar(30));
-
-CREATE TABLE resource_Table(res_id int,res_name varchar(30),res_image varchar(30));
-
-CREATE TABLE resourse_prop(res_prop_id int,res_id int,prop_name varchar(30),prop_input_type varchar(30),is_mandatory varchar(30));
+CREATE TABLE res_prop_list_value (
+    id INT PRIMARY KEY,
+    res_prop_id INT,
+    prop_type VARCHAR(30),
+    list_value VARCHAR(30),
+    FOREIGN KEY (res_prop_id) REFERENCES resource_prop(res_prop_id)
+);
