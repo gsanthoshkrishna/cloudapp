@@ -17,6 +17,10 @@
 
     <h1>Student Details</h1>
     <div id="detailsDiv">
+        
+            {{ student_details['name'] }}
+        
+
         <!-- Student details will be displayed here -->
     </div>
 
@@ -24,6 +28,8 @@
         document.getElementById('studentSelect').addEventListener('change', function() {
             var selectedStudent = this.value;
             var xhr = new XMLHttpRequest();
+            //This is important . It is again redirecting to /student_details so that 
+            //the function under route(/student_details will be executed
             xhr.open('POST', '/student_details', true);
             xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
             xhr.onreadystatechange = function() {

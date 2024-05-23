@@ -32,8 +32,9 @@ def student_details():
     # Query the database for the student details
     cursor.execute("SELECT * FROM students WHERE name = %s", (student_name,))
     student = cursor.fetchone()
+    print(student)
 
-    return render_template('index.html', student=student)
+    return render_template('index.html', student_details=student)
 
 if __name__ == '__main__':
     app.run(debug=True)
