@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Drag and Drop Images</title>
+<style>
+    body {
+        background: linear-gradient(135deg, #6dabe4, #8b5eff);
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+    }
+
+    .container {
+        border: 2px solid black;
+        padding: 20px;
+        margin-bottom: 20px;
+        min-height: 700px;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        position: relative;
+        width: 80%;
+        max-width: 500px;
+    }
+
+    .image-wrapper {
+        position: relative;
+        margin-bottom: 10px;
+    }
+
+    img {
+        max-width: 100px;
+        max-height: 100px;
+        margin: 5px;
+        cursor: pointer;
+        border-radius: 5px;
+        position: relative;
+    }
+
+    .delete-btn {
+        position: absolute;
+        top: -20px;
+        right: -20px;
+        background-color: red;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .drop {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .drag {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+</style>
+</head>
+<body>
+
+<div class="container drag" id="drag-container">
+    <p style="text-align: center; margin: 0;">Drag from here</p>
+    <img src="rose.jpeg" draggable="true" ondragstart="drag(event)">
+    <img src="marigold.jpeg" draggable="true" ondragstart="drag(event)">
+    <img src="lilly.jpeg" draggable="true" ondragstart="drag(event)">
+</div>
+
+<div class="container drop" id="drop-container" ondrop="drop(event)" ondragover="allowDrop(event)">
+    <p id="drop-text" style="text-align: center; margin: 0;">Drop Here</p>
+</div>
+
+<script>
+function allowDrop(event) {
+    event.preventDefault();
+}
+
+function drag(event) {
+    event.dataTransfer.setData("text", event.target.src);
+}
+
+function drop(event) {
+    event.preventDefault();
+    var data = event.dataTransfer.getData("text");
+
+    var wrapper = document.createElement('div');
+    wrapper.className = 'image-wrapper';
+
+    var img = new Image();
+    img.src = data;
+    img.style.maxWidth = "100px";
+    img.style.maxHeight = "100px";
+    img.style.margin = "5px";
+    img.style.cursor = "pointer";
+    wrapper.appendChild(img);
+
+    var deleteBtn = document.createElement('button');
+    deleteBtn.className = 'delete-btn';
+    deleteBtn.innerHTML = 'X';
+    deleteBtn.onclick = function() {
+        deleteImage(wrapper); // Pass the image wrapper element to deleteImage function
+    };
+    wrapper.appendChild(deleteBtn);
+
+    event.target.appendChild(wrapper);
+    document.getElementById('drop-text').style.display = 'none'; // Hide the "Drop Here" text
+}
+
+function deleteImage(wrapper) {
+    wrapper.parentNode.removeChild(wrapper); // Remove the selected image wrapper
+}
+</script>
+
+</body>
+</html>

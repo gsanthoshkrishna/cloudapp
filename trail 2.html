@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Drag and Drop Images with Delete Functionality</title>
+<style>
+    body {
+        background-image: url('background.jpg'); /* URL of your background image */
+        background-size: cover;
+        background-repeat: no-repeat;
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+    }
+
+    #container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+    }
+
+    #image-container,
+    #drop-container {
+        border: 2px dashed #aaa;
+        padding: 20px;
+        margin: 20px;
+        min-height: 100px;
+        background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent white background */
+    }
+
+    .image-wrapper {
+        position: relative;
+        display: inline-block;
+    }
+
+    img {
+        max-width: 100px;
+        max-height: 100px;
+        margin: 5px;
+        cursor: pointer;
+    }
+
+    .delete-btn {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background-color: rgba(255, 0, 0, 0.8); /* Semi-transparent red */
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+</style>
+</head>
+<body>
+
+<div id="container">
+    <h1>Drag and Drop Images</h1>
+    <div id="image-container">
+        <img src="rose.jpeg" draggable="true" ondragstart="drag(event)">
+        <img src="lilly.jpeg" draggable="true" ondragstart="drag(event)">
+        <img src="marigold.jpeg" draggable="true" ondragstart="drag(event)">
+    </div>
+
+    <div id="drop-container" ondrop="drop(event)" ondragover="allowDrop(event)">
+        Drop Here
+    </div>
+</div>
+
+<script>
+function allowDrop(event) {
+    event.preventDefault();
+}
+
+function drag(event) {
+    event.dataTransfer.setData("text", event.target.src);
+}
+
+function drop(event) {
+    event.preventDefault();
+    var data = event.dataTransfer.getData("text");
+
+    var wrapper = document.createElement('div');
+    wrapper.className = 'image-wrapper';
+
+    var img = new Image();
+    img.src = data;
+    img.style.maxWidth = "100px";
+    img.style.maxHeight = "100px";
+    img.style.margin = "5px";
+    img.style.cursor = "pointer";
+    wrapper.appendChild(img);
+
+    var deleteBtn = document.createElement('button');
+    deleteBtn.className = 'delete-btn';
+    deleteBtn.innerHTML = 'X';
+    deleteBtn.onclick = function() {
+        document.getElementById('drop-container').removeChild(wrapper);
+    };
+    wrapper.appendChild(deleteBtn);
+
+    document.getElementById('drop-container').appendChild(wrapper);
+}
+</script>
+
+</body>
+</html>
