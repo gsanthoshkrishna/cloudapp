@@ -72,15 +72,6 @@
 <body>
 
 <!-- Drag and drop functionality -->
-<div id="image-container">
-    <img src="rose.jpeg" draggable="true" ondragstart="drag(event)">
-    <img src="lilly.jpeg" draggable="true" ondragstart="drag(event)">
-    <img src="marigold.jpeg" draggable="true" ondragstart="drag(event)">
-</div>
-
-<div id="drop-container" ondrop="drop(event)" ondragover="allowDrop(event)">
-    Drop Here
-</div>
 
 <!-- Containers with percentage widths and light colors -->
 <div class="container container-1">
@@ -96,41 +87,7 @@
     30%
 </div>
 
-<script>
-function allowDrop(event) {
-    event.preventDefault();
-}
 
-function drag(event) {
-    event.dataTransfer.setData("text", event.target.src);
-}
-
-function drop(event) {
-    event.preventDefault();
-    var data = event.dataTransfer.getData("text");
-
-    var wrapper = document.createElement('div');
-    wrapper.className = 'image-wrapper';
-
-    var img = new Image();
-    img.src = data;
-    img.style.maxWidth = "100px";
-    img.style.maxHeight = "100px";
-    img.style.margin = "5px";
-    img.style.cursor = "pointer";
-    wrapper.appendChild(img);
-
-    var deleteBtn = document.createElement('button');
-    deleteBtn.className = 'delete-btn';
-    deleteBtn.innerHTML = 'X';
-    deleteBtn.onclick = function() {
-        document.getElementById('drop-container').removeChild(wrapper);
-    };
-    wrapper.appendChild(deleteBtn);
-
-    document.getElementById('drop-container').appendChild(wrapper);
-}
-</script>
 
 </body>
 </html>
