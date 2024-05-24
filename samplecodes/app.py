@@ -29,7 +29,7 @@ def index():
     conn.close()
 
     # Pass the data to the template
-    return render_template('properties2.html', resources=res_list)
+    return render_template('properties3.html', resources=res_list)
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -21,7 +21,7 @@ def index():
     # Fetch student names from the database
     cursor.execute("SELECT name FROM students")
     students = [student['name'] for student in cursor.fetchall()]
-    return render_template('index.html', students=students)
+    return render_template('resource.html', students=students)
 
 # Route for displaying student details
 @app.route('/student_details', methods=['POST'])

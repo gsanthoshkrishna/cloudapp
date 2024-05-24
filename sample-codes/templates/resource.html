@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Resource Selection</title>
+    <style>
+        #image-container {
+        border: 2px dashed #aaa;
+        padding: 20px;
+        margin: 20px;
+        min-height: 100px;
+        }
+    </style>
+    <script>
+        // Add event listeners to all images with the class 'resource-image'
+        document.addEventListener('DOMContentLoaded', (event) => {
+            document.querySelectorAll('.resource-image').forEach(img => {
+                img.addEventListener('click', function() {
+                    var selectedResource = this.alt;
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('POST', '/resource_details', true);
+                    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                    xhr.onreadystatechange = function() {
+                        if (xhr.readyState == 4 && xhr.status == 200) {
+                            document.getElementById('resourceDetails').innerHTML = xhr.responseText;
+                        }
+                    };
+                    xhr.send('resource=' + selectedResource);
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+    <div id="image-container">
+        {% for resource in resources %}
+            <img src="/static/{{ resource.res_image }}" alt="{{ resource.res_name }}" class="resource-image">
+        {% endfor %}
+    </div>
+
+    <div id="resourceDetails"></div>
+</body>
+</html>

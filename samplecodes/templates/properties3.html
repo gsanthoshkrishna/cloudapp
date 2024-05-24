@@ -41,9 +41,9 @@
 <body>
 
 <div id="image-container">
-    <img src="rose.jpeg" draggable="true" ondragstart="drag(event)" alt="Rose">
-    <img src="lilly.jpeg" draggable="true" ondragstart="drag(event)" alt="Lilly">
-    <img src="marigold.jpeg" draggable="true" ondragstart="drag(event)" alt="Marigold">
+    {% for imge in resources %}
+<img src="/static/{{ imge[2] }}" draggable="true" ondragstart="drag(event)" alt="{{ imge[1] }}">
+    {% endfor %}
 </div>
 
 <div id="drop-container" ondrop="drop(event)" ondragover="allowDrop(event)">
@@ -56,8 +56,9 @@
     <label for="image-category">Category:</label>
     <select id="image-category">
         <option value="flower">Flower</option>
-        <option value="plant">Plant</option>
-        <option value="tree">Tree</option>
+        <option value="animal">animal</option>
+        <option value="vehicle">vehicle</option>
+        <option value="electrical device">electrical device</option>
     </select>
 </div>
 
