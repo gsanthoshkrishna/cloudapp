@@ -1,36 +1,40 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 import mysql.connector
 
 app = Flask(__name__)
 
-# Configure your MySQL connection
-db_config = {
+# MySQL Configuration
+mysql_config = {
+    'host': 'localhost',
     'user': 'root',
     'password': 'Pass@123',
-    'host': 'localhost',
     'database': 'cloudapp'
 }
 
+# Connect to MySQL
+conn = mysql.connector.connect(**mysql_config)
+cursor = conn.cursor(dictionary=True)
+
+# Route for the main page
 @app.route('/')
 def index():
-    # Connect to the database
-    conn = mysql.connector.connect(**db_config)
-    cursor = conn.cursor()
+    # Fetch resource-details names from the database
+    cursor.execute("SELECT res_name  FROM resources")
+    resources = [resources['res_name'] for resource in cursor.fetchall()]
+    return render_template('resrc.html', resources=resources)
 
-    # Execute the query to get name and grade
-    query = "SELECT res_id,res_name,res_image FROM resources"
-    cursor.execute(query)
+# Route for displaying student details
+@app.route('/resource_details', methods=['POST'])
+def resource_details():
+    # Get the selected student name from the form
+    resource_name = request.form['resource']
 
-    # Fetch all the results
-    res_list = cursor.fetchall()
+    # Query the database for the student details
+    cursor.execute("SELECT * FROM resources WHERE name = %s", (res_name,))
+    resource = cursor.fetchone()
+    print(resource)
 
-    # Close the connection
-    cursor.close()
-    conn.close()
-    print(res_list)
-
-    # Pass the data to the template
-    return render_template('properties2.html', resources=res_list)
+    return render_template('resrc.html', resource_details=resource)
 
 if __name__ == '__main__':
     app.run(debug=True)
