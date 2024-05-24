@@ -80,16 +80,16 @@
 
 <!-- Containers with percentage widths and light colors -->
 <div class="container container-1" id="drag-container">
-    <img src="rose.jpeg" alt="Rose" draggable="true" ondragstart="drag(event)">
-    <img src="lilly.jpeg" alt="Lilly" draggable="true" ondragstart="drag(event)">
-    <img src="marigold.jpeg" alt="Marigold" draggable="true" ondragstart="drag(event)">
+    <img src="rose.jpeg" draggable="true" ondragstart="drag(event)">
+    <img src="lilly.jpeg" draggable="true" ondragstart="drag(event)">
+    <img src="marigold.jpeg" draggable="true" ondragstart="drag(event)">
 </div>
 <div class="container container-2" id="drop-container" ondrop="drop(event)" ondragover="allowDrop(event)">
 
 </div>
 
 <div class="container container-3" id="prop-container" ondrop="drop(event)" ondragover="allowDrop(event)">
-    <div id="properties-container" style="display: none;">
+    <div id="properties-container">
         <label for="image-name">Image Name:</label>
         <input type="text" id="image-name"><br><br>
         <label for="image-category">Category:</label>
@@ -99,7 +99,9 @@
             <option value="tree">Tree</option>
         </select>
     </div>
+    
 </div>
+
 
 <script>
     let currentImage = null;
@@ -107,12 +109,13 @@
     function allowDrop(event) {
         event.preventDefault();
     }
-
+    
+    
     function drag(event) {
         event.dataTransfer.setData("text", event.target.src);
         event.dataTransfer.setData("alt", event.target.alt);
     }
-
+    
     function drop(event) {
         event.preventDefault();
         var data = event.dataTransfer.getData("text");
@@ -120,21 +123,22 @@
 
         var wrapper = document.createElement('div');
         wrapper.className = 'image-wrapper';
-
+    
         var img = new Image();
         img.src = data;
-        img.alt = altText;
+        img.alt = data;
         img.style.maxWidth = "100px";
         img.style.maxHeight = "100px";
         img.style.margin = "5px";
         img.style.cursor = "pointer";
         wrapper.appendChild(img);
-
+        
+    
         var deleteBtn = document.createElement('button');
         deleteBtn.className = 'delete-btn';
         deleteBtn.innerHTML = 'X';
         deleteBtn.onclick = function() {
-            if (wrapper.parentNode) {
+             if (wrapper.parentNode) {
                 wrapper.parentNode.removeChild(wrapper);
                 if (currentImage === img) {
                     currentImage = null;
@@ -156,14 +160,15 @@
         document.getElementById('drop-container').appendChild(wrapper);
     }
 
-    function displayProperties(img) {
-        if (img) {
-            document.getElementById('image-name').value = img.alt;
-            document.getElementById('properties-container').style.display = 'block';
-        } else {
-            document.getElementById('properties-container').style.display = 'none';
-        }
+function displayProperties(img) {
+    if (img) {
+        document.getElementById('image-name').value = img.alt;
+        document.getElementById('properties-container').style.display = 'block';
+    } else {
+        document.getElementById('properties-container').style.display = 'none';
     }
-</script>
+}
+    
+    </script>
 </body>
 </html>

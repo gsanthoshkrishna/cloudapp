@@ -9,7 +9,7 @@
     #image-container,
     #prop-container,
     #drop-container {
-        border: 1px solid black;
+        border: 1px solid rgb(6, 0, 0);
         box-sizing: border-box;
         float: left;
         height: 700px; /* Increased height */
@@ -26,6 +26,8 @@
         max-height: 100px;
         margin: 5px;
         cursor: pointer;
+        border: 2px solid transparent; /* Add default border */
+        transition: border 0.3s; /* Smooth transition for border change */
     }
 
     .delete-btn {
@@ -42,6 +44,10 @@
         display: flex;
         justify-content: center;
         align-items: center;
+    }
+
+    .selected {
+        border: 2px solid blue; /* Highlight border for selected image */
     }
 
     /* Styles for containers with percentage widths and light colors */
@@ -74,51 +80,90 @@
 
 <!-- Containers with percentage widths and light colors -->
 <div class="container container-1" id="drag-container">
-    <img src="rose.jpeg" draggable="true" ondragstart="drag(event)">
-    <img src="lilly.jpeg">
+    <img src="rose.jpeg" alt="Rose" draggable="true" ondragstart="drag(event)">
+    <img src="lilly.jpeg" alt="Lilly" draggable="true" ondragstart="drag(event)">
+    <img src="marigold.jpeg" alt="Marigold" draggable="true" ondragstart="drag(event)">
 </div>
 <div class="container container-2" id="drop-container" ondrop="drop(event)" ondragover="allowDrop(event)">
 
 </div>
-<div class="container container-3" id="prop-container">
 
+<div class="container container-3" id="prop-container" ondrop="drop(event)" ondragover="allowDrop(event)">
+    <div id="properties-container" style="display: none;">
+        <label for="image-name">Image Name:</label>
+        <input type="text" id="image-name"><br><br>
+        <label for="image-category">Category:</label>
+        <select id="image-category">
+            <option value="flower">Flower</option>
+            <option value="plant">Plant</option>
+            <option value="tree">Tree</option>
+        </select>
+    </div>
 </div>
 
-
 <script>
+    let currentImage = null;
+
     function allowDrop(event) {
         event.preventDefault();
     }
-    
+
     function drag(event) {
         event.dataTransfer.setData("text", event.target.src);
+        event.dataTransfer.setData("alt", event.target.alt);
     }
-    
+
     function drop(event) {
         event.preventDefault();
         var data = event.dataTransfer.getData("text");
-    
+        var altText = event.dataTransfer.getData("alt");
+
         var wrapper = document.createElement('div');
         wrapper.className = 'image-wrapper';
-    
+
         var img = new Image();
         img.src = data;
+        img.alt = altText;
         img.style.maxWidth = "100px";
         img.style.maxHeight = "100px";
         img.style.margin = "5px";
         img.style.cursor = "pointer";
         wrapper.appendChild(img);
-    
+
         var deleteBtn = document.createElement('button');
         deleteBtn.className = 'delete-btn';
         deleteBtn.innerHTML = 'X';
         deleteBtn.onclick = function() {
-            document.getElementById('drop-container').removeChild(wrapper);
+            if (wrapper.parentNode) {
+                wrapper.parentNode.removeChild(wrapper);
+                if (currentImage === img) {
+                    currentImage = null;
+                    displayProperties(null);
+                }
+            }
         };
         wrapper.appendChild(deleteBtn);
-    
+
+        img.onclick = function() {
+            if (currentImage) {
+                currentImage.classList.remove('selected');
+            }
+            img.classList.toggle('selected');
+            currentImage = img.classList.contains('selected') ? img : null;
+            displayProperties(currentImage);
+        };
+
         document.getElementById('drop-container').appendChild(wrapper);
     }
-    </script>
+
+    function displayProperties(img) {
+        if (img) {
+            document.getElementById('image-name').value = img.alt;
+            document.getElementById('properties-container').style.display = 'block';
+        } else {
+            document.getElementById('properties-container').style.display = 'none';
+        }
+    }
+</script>
 </body>
 </html>
