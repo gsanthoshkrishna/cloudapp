@@ -42,7 +42,7 @@
 
 <div id="image-container">
     {% for res in resources %}
-<img src="/static/{{ res[2] }}"  alt="{{ res[1]}}" >
+<img src="/static/{{ res[2] }}" draggable="true" ondragstart="drag(event)" alt="{{ res[0] }}">
     {% endfor %}
 </div>
 
@@ -51,13 +51,16 @@
 </div>
 
 <div id="properties-container">
-    <label for="image-name">Image Name:</label>
-    <input type="text" id="image-name" readonly><br><br>
+    {% for prop in res_props %}
+        <label for ="{{ prop[2] }}" id="{{ prop[2] }}-lbl-id"></label>
+    {% endfor %}
+    <input type="text" id="image-name"><br><br>
     <label for="image-category">Category:</label>
     <select id="image-category">
         <option value="flower">Flower</option>
-        <option value="plant">Plant</option>
-        <option value="tree">Tree</option>
+        <option value="animal">animal</option>
+        <option value="vehicle">vehicle</option>
+        <option value="electrical device">electrical device</option>
     </select>
 </div>
 
@@ -65,11 +68,8 @@
 let currentImage = null;
 
 document.addEventListener('keydown', function(event) {
-    if (event.key === 'Delete') {
-        let selectedImages = document.querySelectorAll('.selected');
-        selectedImages.forEach(image => {
-            image.parentElement.removeChild(image);
-        });
+    if (event.key === 'Delete' && currentImage) {
+        currentImage.parentElement.removeChild(currentImage);
         document.getElementById('properties-container').style.display = 'none';
         currentImage = null;
     }
@@ -80,7 +80,7 @@ document.addEventListener('click', function(event) {
     const dropContainer = document.getElementById('drop-container');
     
     // Check if the click is outside both the properties container and the selected image
-    if (!propertiesContainer.contains(event.target) && !dropContainer.contains(event.target)) {
+    if (!propertiesContainer.contains(event.target) && (!currentImage || !currentImage.contains(event.target))) {
         propertiesContainer.style.display = 'none';
         if (currentImage) {
             currentImage.classList.remove('selected');
@@ -128,7 +128,19 @@ function drop(event) {
 
 function displayProperties(img) {
     if (img) {
+        var selectedresource = img.alt;
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/resource_details', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    document.getElementById('detailsDiv').innerHTML = xhr.responseText;
+                }
+            };
+            xhr.send('resource=' + selectedresource);
         document.getElementById('image-name').value = img.alt;
+        var label = document.getElementById('res-name-lbl-id');
+        label.textContent = 'Full Name:';
         document.getElementById('properties-container').style.display = 'block';
     } else {
         document.getElementById('properties-container').style.display = 'none';
