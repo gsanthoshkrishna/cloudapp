@@ -1,48 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Drag and Drop Images with Persistent Properties Display</title>
-<style>
-    #image-container,
-    #drop-container {
-        border: 2px dashed #aaa;
-        padding: 20px;
-        margin: 20px;
-        min-height: 100px;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drag and Drop Images with Persistent Properties Display</title>
+    <style>
+        #image-container,
+        #drop-container {
+            border: 2px dashed #aaa;
+            padding: 20px;
+            margin: 20px;
+            min-height: 100px;
+        }
 
-    .image-wrapper {
-        position: relative;
-        display: inline-block;
-    }
+        .image-wrapper {
+            position: relative;
+            display: inline-block;
+        }
 
-    img {
-        max-width: 100px;
-        max-height: 100px;
-        margin: 5px;
-        cursor: pointer;
-    }
+        img {
+            max-width: 100px;
+            max-height: 100px;
+            margin: 5px;
+            cursor: pointer;
+        }
 
-    .selected {
-        border: 2px solid blue;
-    }
+        .selected {
+            border: 2px solid blue;
+        }
 
-    #properties-container {
-        display: none;
-        border: 2px dashed #aaa;
-        padding: 20px;
-        margin: 20px;
-        min-height: 100px;
-    }
-</style>
+        #properties-container {
+            display: none;
+            border: 2px dashed #aaa;
+            padding: 20px;
+            margin: 20px;
+            min-height: 100px;
+        }
+    </style>
 </head>
 <body>
 
 <div id="image-container">
     {% for imge in resources %}
-        <img src="/static/{{ imge.image }}" draggable="true" ondragstart="drag(event)" alt="{{ imge.name }}">
+        <img src="/static/{{ imge.image }}" draggable="true" ondragstart="drag(event)" alt="{{ imge.id }}">
     {% endfor %}
 </div>
 
@@ -51,8 +51,6 @@
 </div>
 
 <div id="properties-container">
-    <label for="image-name">Image Name:</label>
-    <input type="text" id="image-name" readonly><br><br>
     <div id="image-properties"></div>
 </div>
 
@@ -71,7 +69,6 @@ document.addEventListener('click', function(event) {
     const propertiesContainer = document.getElementById('properties-container');
     const dropContainer = document.getElementById('drop-container');
     
-    // Check if the click is outside both the properties container and the selected image
     if (!propertiesContainer.contains(event.target) && (!currentImage || !currentImage.contains(event.target))) {
         propertiesContainer.style.display = 'none';
         if (currentImage) {
@@ -120,20 +117,41 @@ function drop(event) {
 
 function displayProperties(img) {
     if (img) {
-        document.getElementById('image-name').value = img.alt;
         document.getElementById('properties-container').style.display = 'block';
         
-        fetch(`/get_properties/${img.alt}`)
-            .then(response => response.json())
-            .then(data => {
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/get_properties', true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState == 4 && xhr.status == 200) {
+                var data = JSON.parse(xhr.responseText);
                 let propertiesDiv = document.getElementById('image-properties');
                 propertiesDiv.innerHTML = ''; // Clear previous properties
                 data.forEach(prop => {
                     let propDiv = document.createElement('div');
-                    propDiv.innerHTML = `<strong>${prop.prop_name}:</strong> ${prop.prop_input_type} (Mandatory: ${prop.is_mandatory})`;
+                    let inputElement;
+                    switch(prop.prop_input_type) {
+                        case 'textbox':
+                            inputElement = `<input type="text" name="${prop.prop_name}" ${prop.is_mandatory == 'yes' ? 'required' : ''}>`;
+                            break;
+                        case 'dropdown':
+                            inputElement = `<select name="${prop.prop_name}" ${prop.is_mandatory == 'yes' ? 'required' : ''}><option value="">Select</option></select>`;
+                            break;
+                        case 'checkbox':
+                            inputElement = `<input type="checkbox" name="${prop.prop_name}" ${prop.is_mandatory == 'yes' ? 'required' : ''}>`;
+                            break;
+                        case 'radio':
+                            inputElement = `<input type="radio" name="${prop.prop_name}" ${prop.is_mandatory == 'yes' ? 'required' : ''}>`;
+                            break;
+                        default:
+                            inputElement = `<input type="text" name="${prop.prop_name}" ${prop.is_mandatory == 'yes' ? 'required' : ''}>`;
+                    }
+                    propDiv.innerHTML = `<strong>${prop.prop_name}:</strong> ${inputElement}`;
                     propertiesDiv.appendChild(propDiv);
                 });
-            });
+            }
+        };
+        xhr.send('resource_id=' + encodeURIComponent(img.alt));
     } else {
         document.getElementById('properties-container').style.display = 'none';
     }
