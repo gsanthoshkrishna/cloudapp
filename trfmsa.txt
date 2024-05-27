@@ -1,0 +1,139 @@
+provider "azurerm" {
+  features {}
+}
+
+resource "azurerm_storage_account" "example" {
+  name                     = "name-replaceme"
+  resource_group_name      = "resorce_group_name-replaceme"
+  location                 = "location-replaceme"
+  account_tier             = "account_tier-replaceme"
+  account_replication_type = "account_replication_type-replaceme"
+
+  # Optional properties
+  account_kind             = "account_kind-replaceme"
+  access_tier              = "access_tier-replaceme"
+  enable_https_traffic_only = enable_azure_files_aad_integration-replaceme
+  is_hns_enabled           = is_hns_enabled-replaceme
+  min_tls_version          = "min_tls_version-replaceme"
+
+  network_rules {
+    default_action             = "default_action-replaceme"
+    bypass                     = ["bypass-replaceme"]
+    ip_rules                   = ["ip_rules-replaceme"]
+    virtual_network_subnet_ids = [
+      "virtual_network_subnet_ids-replaceme"
+    ]
+  }
+
+  tags = {
+    environment = "environment-replaceme"
+    cost_center = "cost_center-replaceme"
+  }
+
+  blob_properties {
+    delete_retention_policy {
+      days = days-replaceme
+    }
+
+    container_delete_retention_policy {
+      days = days-replaceme
+    }
+
+    versioning_enabled = versioning_enabled-replaceme
+    change_feed_enabled = change_feed_enabled-replaceme
+    default_service_version = "default_service_version-replaceme"
+  }
+
+  queue_properties {
+    logging {
+      delete = delete-replaceme
+      read   = read-replaceme
+      write  = write-replaceme
+      version = "version-replaceme"
+      retention_policy {
+        days = days-replaceme
+      }
+    }
+
+    minute_metrics {
+      enabled = enabled-replaceme
+      include_apis = include_apis-replaceme
+      retention_policy {
+        days = days-replaceme
+      }
+    }
+
+    hour_metrics {
+      enabled = enabled-replaceme
+      include_apis = include_apis-replaceme
+      retention_policy {
+        days = days-replaceme
+      }
+    }
+
+    cors_rule {
+      allowed_headers    = ["allowed_headers-replaceme"]
+      allowed_methods    = ["allowe_methods-replaceme"]
+      allowed_origins    = ["allowed_methods-replaceme"]
+      exposed_headers    = ["exposed-headers-replaceme"]
+      max_age_in_seconds = max_age_in_seconds-replaceme
+    }
+  }
+
+  table_properties {
+    logging {
+      delete = delete-replaceme
+      read   = read-replaceme
+      write  = write-replaceme
+      version = "version-replaceme"
+      retention_policy {
+        days = days-replaceme
+      }
+    }
+
+    minute_metrics {
+      enabled = enabled-replaceme
+      include_apis = tinclude_apis-replaceme
+      retention_policy {
+        days = days-replaceme
+      }
+    }
+
+    hour_metrics {
+      enabled = enabled-replaceme
+      include_apis = include_apis-replaceme
+      retention_policy {
+        days = days-replaceme
+      }
+    }
+
+    cors_rule {
+      allowed_headers    = ["allowed_headers-replaceme"]
+      allowed_methods    = ["allowe_methods-replaceme]
+      allowed_origins    = ["allowed_origins-replaceme"]
+      exposed_headers    = ["exposed_headers-replaceme"]
+      max_age_in_seconds = max_age_in_seconds-replaceme
+    }
+  }
+
+  share_properties {
+    cors_rule {
+      allowed_headers    = ["allowed_headers-replaceme"]
+      allowed_methods    = ["allowe_methods-replaceme"]
+      allowed_origins    = ["allowed_origins-replaceme"]
+      exposed_headers    = ["exposed_headers-replaceme"]
+      max_age_in_seconds = max_age_in_seconds-replaceme
+    }
+
+    delete_retention_policy {
+      days = days-replaceme
+    }
+
+    enable_azure_files_aad_integration = enable_azure_files_aad_integration-replaceme
+  }
+
+  static_website {
+    index_document     = "index_document-replaceme"
+    error_404_document = "error_404_document-replaceme"
+  }
+}

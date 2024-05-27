@@ -1,0 +1,24 @@
+provider "azurerm" {
+  features {}
+}
+
+resource "azurerm_virtual_network" "example" {
+  name                = "name-replaceme"
+  address_space       = ["address_space-replaceme"]
+  location            = "location-replaceme"
+  resource_group_name = "resorce_group_name-replaceme"
+
+  # Optional properties
+  dns_servers         = ["10.1.1.4", "10.1.2.4"]
+  bgp_community       = "bgp_community-replaceme"
+  ddos_protection_plan {
+    id = "id-replaceme"
+  }
+  enable_ddos_protection   = enable_ddos_protection-replaceme
+  enable_vm_protection     = enable_vm_protection-relplaceme
+
+  tags = {
+    environment = "environment-replaceme"
+    cost_center = "cost_center-replaceme"
+  }
+}

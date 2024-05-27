@@ -1,0 +1,13 @@
+provider "azurerm" {
+  features {}
+}
+
+resource "azurerm_resource_group" "example" {
+  name     = "name-replaceme"
+  location = "location-replaceme"
+
+  tags = {
+    environment = "environment-replaceme"
+    cost_center = "cost_center-replaceme"
+  }
+}
