@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drag and Drop with Separate Containers</title>
+    <style>
+        #dragContainer {
+            width: 400px;
+            height: 700px;
+            margin: 20px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            background-color: #78a9a8d5;
+            float: left;
+        }
+
+        #dropContainer {
+            width: 500px;
+            height: 700px;
+            margin: 20px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            background-color: #e8f8ff;
+            position: relative;
+            float: left;
+        }
+
+        .draggable {
+            width: 100px;
+            height: 100px;
+            cursor: grab;
+        }
+
+        .over {
+            border: 2px dashed #000;
+        }
+    </style>
+</head>
+<body>
+    <div id="dragContainer">
+        <img id="house" src="houseimg.jpg" class="draggable" draggable="true" alt="House">
+        <img id="person" src="personimg.jpg" class="draggable" draggable="true" alt="Person">
+    </div>
+    <div id="dropContainer"></div>
+
+    <script>
+        const dropContainer = document.getElementById('dropContainer');
+        let zIndexCounter = 1;
+
+        document.querySelectorAll('.draggable').forEach(element => {
+            element.addEventListener('dragstart', function (event) {
+                event.dataTransfer.setData('text/plain', event.target.id);
+            });
+        });
+
+        dropContainer.addEventListener('dragover', function (event) {
+            event.preventDefault();
+            dropContainer.classList.add('over');
+        });
+
+        dropContainer.addEventListener('dragleave', function () {
+            dropContainer.classList.remove('over');
+        });
+
+        dropContainer.addEventListener('drop', function (event) {
+            event.preventDefault();
+            dropContainer.classList.remove('over');
+            const id = event.dataTransfer.getData('text/plain');
+            const draggedElement = document.getElementById(id);
+            const clone = draggedElement.cloneNode(true);
+            clone.removeAttribute('draggable');
+            clone.classList.remove('draggable');
+            dropContainer.appendChild(clone);
+
+            const rect = dropContainer.getBoundingClientRect();
+            const x = event.clientX - rect.left - (draggedElement.width / 2);
+            const y = event.clientY - rect.top - (draggedElement.height / 2);
+            clone.style.position = 'absolute';
+            clone.style.left = `${x}px`;
+            clone.style.top = `${y}px`;
+            clone.style.zIndex = zIndexCounter++;
+        });
+    </script>
+</body>
+</html>
