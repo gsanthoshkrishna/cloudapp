@@ -51,7 +51,7 @@
     Drop Here
 </div>
 <div id="load-container">
-  Load Here
+    Load Here
 </div>
 
 <div id="properties-container">
@@ -121,8 +121,6 @@ function drop(event) {
 
 function displayProperties(img) {
     if (img) {
-        document.getElementById('properties-container').style.display = 'block';
-        
         var xhr = new XMLHttpRequest();
         xhr.open('POST', '/get_properties', true);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
@@ -153,12 +151,31 @@ function displayProperties(img) {
                     propDiv.innerHTML = `<strong>${prop.prop_name}:</strong> ${inputElement}`;
                     propertiesDiv.appendChild(propDiv);
                 });
+                loadProperties(img.alt); // Load properties for the image
             }
         };
         xhr.send('resource_id=' + encodeURIComponent(img.alt));
     } else {
         document.getElementById('properties-container').style.display = 'none';
     }
+}
+
+function loadProperties(resourceId) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', '/load_properties?resource_id=' + encodeURIComponent(resourceId), true);
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState == 4 && xhr.status == 200) {
+            var data = JSON.parse(xhr.responseText);
+            let loadContainer = document.getElementById('load-container');
+            loadContainer.innerHTML = ''; // Clear previous properties
+            data.forEach(prop => {
+                let propDiv = document.createElement('div');
+                propDiv.innerHTML = `<strong>${prop.prop_name}:</strong> ${prop.prop_value}`;
+                loadContainer.appendChild(propDiv);
+            });
+        }
+    };
+    xhr.send();
 }
 </script>
 
