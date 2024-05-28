@@ -1,0 +1,34 @@
+provider "azurerm" {
+  features {}
+}
+
+resource "azurerm_subnet" "example" {
+  name                 = "name-replaceme"
+  resource_group_name  = "resorce_group_name-replaceme"
+  virtual_network_name = "virtual_network_name-replaceme"
+  address_prefixes     = ["address_prefixes-replaceme"]
+
+  # Optional properties
+  service_endpoints = ["service_endpoints-replaceme"]
+
+  delegations {
+    name = "name-replaceme"
+    service_delegation {
+      name = "name-replaceme"
+      actions = [
+        "actions-replaceme",
+      ]
+    }
+  }
+
+  private_endpoint_network_policies_enabled = private_endpoint_network_policies_enabled-replaceme
+  private_link_service_network_policies_enabled = private_link_service_network_policies_enabled-replaceme
+
+  network_security_group_id = "network_security_group_id-replaceme"
+  route_table_id = "route_table_id-replaceme"
+
+  tags = {
+    environment = "environment-replaceme"
+    cost_center = "cost_center-replaceme"
+  }
+}
