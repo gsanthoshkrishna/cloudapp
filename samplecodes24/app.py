@@ -19,34 +19,26 @@ cnxpool = mysql.connector.pooling.MySQLConnectionPool(pool_name="mypool",
 @app.route('/')
 def index():
     try:
+        # Fetch resources from the resource table
         cnx = cnxpool.get_connection()
         cursor = cnx.cursor(dictionary=True)
         query = "SELECT res_id AS id, res_name AS name, res_image AS image FROM resource"
         cursor.execute(query)
         resources = cursor.fetchall()
-        cursor.close()
-        cnx.close()
-        return render_template('task24.html', resources=resources)
-    except mysql.connector.Error as err:
-        return str(err)
 
-@app.route('/get_properties', methods=['POST'])
-def get_properties():
-    resource_id = request.form['resource_id']
-    print("Received resource_id:", resource_id)
-    try:
-        cnx = cnxpool.get_connection()
-        cursor = cnx.cursor(dictionary=True)
+        # Fetch images from the tr_template_load table
         query = """
-            SELECT prop_name, prop_input_type, is_mandatory 
-            FROM resource_prop 
-            WHERE res_id = %s
+            SELECT DISTINCT tr_template_load.res_unique_id, tr_template_load.res_id, resource.res_image
+            FROM tr_template_load
+            INNER JOIN resource ON tr_template_load.res_id = resource.res_id
         """
-        cursor.execute(query, (resource_id,))
-        prop = cursor.fetchall()
+        cursor.execute(query)
+        load_images = cursor.fetchall()
+
         cursor.close()
         cnx.close()
-        return jsonify(prop)
+
+        return render_template('task24.html', resources=resources, load_images=load_images)
     except mysql.connector.Error as err:
         return str(err)
 
@@ -63,10 +55,10 @@ def load_properties():
             WHERE res_id = %s
         """
         cursor.execute(query, (resource_id,))
-        prop = cursor.fetchall()
+        props = cursor.fetchall()
         cursor.close()
         cnx.close()
-        return jsonify(prop)
+        return jsonify(props)
     except mysql.connector.Error as err:
         return str(err)
 

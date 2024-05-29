@@ -38,20 +38,24 @@
             min-height: 100px;
         }
     </style>
+
 </head>
 <body>
 
 <div id="image-container">
-    {% for imge in resources %}
-        <img src="/static/{{ imge.image }}" draggable="true" ondragstart="drag(event)" alt="{{ imge.id }}">
+    {% for resource in resources %}
+        <img src="/static/{{ resource.image }}" alt="{{ resource.id }}" draggable="true" ondragstart="drag(event)">
     {% endfor %}
 </div>
 
 <div id="drop-container" ondrop="drop(event)" ondragover="allowDrop(event)">
     Drop Here
 </div>
+
 <div id="load-container">
-    Load Here
+    {% for image in load_images %}
+        <img src="/static/{{ image.res_image }}" alt="{{ image.res_id }}" onclick="toggleSelection(this)">
+    {% endfor %}
 </div>
 
 <div id="properties-container">
@@ -59,124 +63,67 @@
 </div>
 
 <script>
-let currentImage = null;
+    let currentImage = null;
 
-document.addEventListener('keydown', function(event) {
-    if (event.key === 'Delete' && currentImage) {
-        currentImage.parentElement.removeChild(currentImage);
-        document.getElementById('properties-container').style.display = 'none';
-        currentImage = null;
+    function allowDrop(event) {
+        event.preventDefault();
     }
-});
 
-document.addEventListener('click', function(event) {
-    const propertiesContainer = document.getElementById('properties-container');
-    const dropContainer = document.getElementById('drop-container');
-    
-    if (!propertiesContainer.contains(event.target) && (!currentImage || !currentImage.contains(event.target))) {
-        propertiesContainer.style.display = 'none';
+    function drag(event) {
+        event.dataTransfer.setData("text", event.target.src);
+        event.dataTransfer.setData("alt", event.target.alt);
+    }
+
+    function drop(event) {
+        event.preventDefault();
+        var data = event.dataTransfer.getData("text");
+        var altText = event.dataTransfer.getData("alt");
+
+        var wrapper = document.createElement('div');
+        wrapper.className = 'image-wrapper';
+
+        var img = new Image();
+        img.src = data;
+        img.alt = altText;
+        img.style.maxWidth = "100px";
+        img.style.maxHeight = "100px";
+        img.style.margin = "5px";
+        img.style.cursor = "pointer";
+        img.onclick = function() {
+            toggleSelection(img);
+        };
+        wrapper.appendChild(img);
+
+        document.getElementById('drop-container').appendChild(wrapper);
+    }
+
+    function toggleSelection(img) {
         if (currentImage) {
             currentImage.classList.remove('selected');
         }
-        currentImage = null;
+        currentImage = img;
+        currentImage.classList.add('selected');
+        displayProperties(currentImage.alt);
     }
-});
 
-function allowDrop(event) {
-    event.preventDefault();
-}
-
-function drag(event) {
-    event.dataTransfer.setData("text", event.target.src);
-    event.dataTransfer.setData("alt", event.target.alt);
-}
-
-function drop(event) {
-    event.preventDefault();
-    var data = event.dataTransfer.getData("text");
-    var altText = event.dataTransfer.getData("alt");
-
-    var wrapper = document.createElement('div');
-    wrapper.className = 'image-wrapper';
-
-    var img = new Image();
-    img.src = data;
-    img.alt = altText;
-    img.style.maxWidth = "100px";
-    img.style.maxHeight = "100px";
-    img.style.margin = "5px";
-    img.style.cursor = "pointer";
-    img.onclick = function() {
-        if (currentImage) {
-            currentImage.classList.remove('selected');
-        }
-        img.classList.toggle('selected');
-        currentImage = img.classList.contains('selected') ? img : null;
-        displayProperties(currentImage);
-    };
-    wrapper.appendChild(img);
-
-    document.getElementById('drop-container').appendChild(wrapper);
-}
-
-function displayProperties(img) {
-    if (img) {
+    function displayProperties(resource_id) {
         var xhr = new XMLHttpRequest();
-        xhr.open('POST', '/get_properties', true);
-        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.open('GET', '/load_properties?resource_id=' + encodeURIComponent(resource_id), true);
         xhr.onreadystatechange = function() {
             if (xhr.readyState == 4 && xhr.status == 200) {
-                var data = JSON.parse(xhr.responseText);
-                let propertiesDiv = document.getElementById('image-properties');
+                var properties = JSON.parse(xhr.responseText);
+                var propertiesDiv = document.getElementById('image-properties');
                 propertiesDiv.innerHTML = ''; // Clear previous properties
-                data.forEach(prop => {
-                    let propDiv = document.createElement('div');
-                    let inputElement;
-                    switch(prop.prop_input_type) {
-                        case 'textbox':
-                            inputElement = `<input type="text" name="${prop.prop_name}" ${prop.is_mandatory == 'yes' ? 'required' : ''}>`;
-                            break;
-                        case 'dropdown':
-                            inputElement = `<select name="${prop.prop_name}" ${prop.is_mandatory == 'yes' ? 'required' : ''}><option value="">Select</option></select>`;
-                            break;
-                        case 'checkbox':
-                            inputElement = `<input type="checkbox" name="${prop.prop_name}" ${prop.is_mandatory == 'yes' ? 'required' : ''}>`;
-                            break;
-                        case 'radio':
-                            inputElement = `<input type="radio" name="${prop.prop_name}" ${prop.is_mandatory == 'yes' ? 'required' : ''}>`;
-                            break;
-                        default:
-                            inputElement = `<input type="text" name="${prop.prop_name}" ${prop.is_mandatory == 'yes' ? 'required' : ''}>`;
-                    }
-                    propDiv.innerHTML = `<strong>${prop.prop_name}:</strong> ${inputElement}`;
+                properties.forEach(function(prop) {
+                    var propDiv = document.createElement('div');
+                    propDiv.innerHTML = `<strong>${prop.prop_name}:</strong> ${prop.prop_value}`;
                     propertiesDiv.appendChild(propDiv);
                 });
-                loadProperties(img.alt); // Load properties for the image
+                document.getElementById('properties-container').style.display = 'block';
             }
         };
-        xhr.send('resource_id=' + encodeURIComponent(img.alt));
-    } else {
-        document.getElementById('properties-container').style.display = 'none';
+        xhr.send();
     }
-}
-
-function loadProperties(resourceId) {
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', '/load_properties?resource_id=' + encodeURIComponent(resourceId), true);
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState == 4 && xhr.status == 200) {
-            var data = JSON.parse(xhr.responseText);
-            let loadContainer = document.getElementById('load-container');
-            loadContainer.innerHTML = ''; // Clear previous properties
-            data.forEach(prop => {
-                let propDiv = document.createElement('div');
-                propDiv.innerHTML = `<strong>${prop.prop_name}:</strong> ${prop.prop_value}`;
-                loadContainer.appendChild(propDiv);
-            });
-        }
-    };
-    xhr.send();
-}
 </script>
 
 </body>
