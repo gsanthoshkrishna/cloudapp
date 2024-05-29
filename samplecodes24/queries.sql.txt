@@ -8,15 +8,15 @@ CREATE TABLE tr_template_load (
     FOREIGN KEY (res_id) REFERENCES resource(res_id)
 );
 
-INSERT INTO tr_template_load (template_id, res_id, prop_name, prop_value, prop_id) VALUES
-(1, 1, 'colour', 'yellow', 2,bus1),
-(2, 1, 'wheelcount', '4', 3,bus1),
-(3, 1, 'manufacture', 'maruthi', 4,bus1),
-(4, 1, 'isac', 'yes', 5,bus1),
-(5, 3, 'is it mammal', 'yes', 7,sqrl),
-(6, 2, 'colour', 'red', 9,rose),
-(7, 10, 'usable', 'yes', 11,comp),
-(8, 10, 'no of devices', '5', 12,comp);
-(9, 1, 'colour', 'red', 2,bus2),
-(10, 1, 'wheelcount', '6', 3,bus2),
-(11, 1, 'name', 'clgbus', 1,bus2),
+INSERT INTO tr_template_load (template_id, res_id, prop_name, prop_value, prop_id, res_unique_id) VALUES
+(1, 1, 'colour', 'yellow', 2, 'bus1'),
+(2, 1, 'wheelcount', '4', 3, 'bus1'),
+(3, 1, 'manufacture', 'maruthi', 4, 'bus1'),
+(4, 1, 'isac', 'yes', 5, 'bus1'),
+(5, 3, 'is it mammal', 'yes', 7, 'sqrl'),
+(6, 2, 'colour', 'red', 9, 'rose'),
+(7, 10, 'usable', 'yes', 11, 'comp'),
+(8, 10, 'no of devices', '5', 12, 'comp'),
+(9, 1, 'colour', 'red', 2, 'bus2'),
+(10, 1, 'wheelcount', '6', 3, 'bus2'),
+(11, 1, 'name', 'clgbus', 1, 'bus2');

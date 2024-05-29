@@ -38,7 +38,6 @@
             min-height: 100px;
         }
     </style>
-
 </head>
 <body>
 
@@ -54,7 +53,7 @@
 
 <div id="load-container">
     {% for image in load_images %}
-        <img src="/static/{{ image.res_image }}" alt="{{ image.res_id }}" onclick="toggleSelection(this)">
+        <img src="/static/{{ image.res_image }}" alt="{{ image.res_unique_id }}" onclick="toggleSelection(this)">
     {% endfor %}
 </div>
 
@@ -106,9 +105,9 @@
         displayProperties(currentImage.alt);
     }
 
-    function displayProperties(resource_id) {
+    function displayProperties(res_unique_id) {
         var xhr = new XMLHttpRequest();
-        xhr.open('GET', '/load_properties?resource_id=' + encodeURIComponent(resource_id), true);
+        xhr.open('GET', '/load_properties?res_unique_id=' + encodeURIComponent(res_unique_id), true);
         xhr.onreadystatechange = function() {
             if (xhr.readyState == 4 && xhr.status == 200) {
                 var properties = JSON.parse(xhr.responseText);
