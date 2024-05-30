@@ -8,7 +8,7 @@ app = Flask(__name__)
 dbconfig = {
     "host": "localhost",
     "user": "root",
-    "password": "gowri@311",
+    "password": "Pass@123",
     "database": "cloudapp"
 }
 
@@ -22,15 +22,15 @@ def index():
         cursor = cnx.cursor(dictionary=True)
         
         # Fetch resources from the resource table
-        query = "SELECT res_id AS id, res_name AS name, res_image AS image FROM resource"
+        query = "SELECT res_id AS id, res_name AS name, res_image AS image FROM resources"
         cursor.execute(query)
         resources = cursor.fetchall()
         
         # Fetch images from the tr_template_load table
         query = """
-            SELECT DISTINCT tr_template_load.res_unique_id, tr_template_load.res_id, resource.res_image
+            SELECT DISTINCT tr_template_load.res_unique_id, tr_template_load.res_id, resources.res_image
             FROM tr_template_load
-            INNER JOIN resource ON tr_template_load.res_id = resource.res_id
+            INNER JOIN resources ON tr_template_load.res_id = resources.res_id
         """
 
         print(query);
@@ -51,7 +51,7 @@ def get_properties():
     selected_id = request.args.get('selected_id')
     div_id = request.args.get('div_id')
     #TODO remove below temp code
-    div_id = "drop-container"
+    #div_id = "drop-container"
     print("Selected ID:", selected_id)
     print("Div ID:", div_id)
     cnx = None
