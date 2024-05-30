@@ -7,8 +7,7 @@
     <style>
         
         #image-container,
-        #drop-container,
-        #load-container {
+        #drop-container {
             border: 1px solid rgb(6, 0, 0);
             box-sizing: border-box;
             float: left;
@@ -20,6 +19,19 @@
             width: 25%;
             
         }
+            /* #load-container {
+            border: 1px solid rgb(6, 0, 0);
+            box-sizing: border-box;
+            float: left;
+            height: 700px; /* Increased height */
+            /*min-height: 100px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            width: 25%;
+            
+
+            }
 
         .image-wrapper {
             position: relative;
@@ -93,7 +105,7 @@
     Drop Here
 </div>
 
-<div class="container container-3" id="load-container">
+<div class="container container-3" id="load-container" >
     {% for image in load_images %}
         <img src="/static/{{ image.res_image }}" alt="{{ image.res_unique_id }}" onclick="toggleSelection(this)">
     {% endfor %}
@@ -127,9 +139,9 @@
         img.src = data;
         img.alt = altText;
         img.style.maxWidth = "150px";
-        img.style.maxHeight = "150px";
-        img.style.margin = "5px";
-        img.style.cursor = "pointer";
+        img.style.maxHeight = "15
+        
+        sor = "pointer";
         img.onclick = function() {
             toggleSelection(img);
         };
