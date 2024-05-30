@@ -1,21 +1,21 @@
-def replace_string_in_file(input_file_path, output_file_path, old_string, new_string):
+def replace_string_in_file(input_file_path, old_string, new_string, output_file_path):
     try:
-        # Read the contents of the input file
+        # Open the input file in read mode and read its contents
         with open(input_file_path, 'r') as file:
-            file_data = file.read()
-
-        # Replace the old string with the new string
-        new_data = file_data.replace(old_string, new_string)
-
-        # Write the new data to the output file
+            file_contents = file.read()
+        
+        # Replace the target string with the new string
+        updated_contents = file_contents.replace(old_string, new_string)
+        
+        # Open the output file in write mode and write the updated contents to the new file
         with open(output_file_path, 'w') as file:
-            file.write(new_data)
-
-        print(f"Replaced '{old_string}' with '{new_string}' and saved to '{output_file_path}'")
+            file.write(updated_contents)
+        
+        print(f"Successfully replaced '{old_string}' with '{new_string}' and saved to {output_file_path}")
+    except FileNotFoundError:
+        print(f"Error: The file {input_file_path} does not exist.")
     except Exception as e:
         print(f"An error occurred: {e}")
 
-# Example usage:
-input_file = 'smpl.txt'
-output_file = 'modified_smpl.txt'
-replace_string_in_file(input_file, output_file, 'old_string', 'new_string')
+# Example usage
+replace_string_in_file('trfmvmtst.txt', '"name-replaceme"', '"vmname"', 'output.txt')

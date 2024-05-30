@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Click Example</title>
+    <style>
+        .container {
+            display: inline-block;
+            margin: 10px;
+            border: 1px solid #000;
+            padding: 10px;
+        }
+        .container img {
+            width: 100px;
+            height: 100px;
+            cursor: pointer;
+        }
+    </style>
+    <script>
+        function showDivIdAndAlt(divId, altText) {
+            document.getElementById('output').textContent = "Div ID: " + divId + ", Image Alt: " + altText;
+        }
+    </script>
+</head>
+<body>
+
+<div id="container1" class="container">
+    <img src="static/marigold.jpeg" alt="Image 1" onclick="showDivIdAndAlt(this.parentElement.id, this.alt)">
+</div>
+
+<div id="container2" class="container">
+    <img src="static/bus.png" alt="Image 2" onclick="showDivIdAndAlt(this.parentElement.id, this.alt)">
+</div>
+
+<div id="container3" class="container">
+    <img src="static/networkintrfc.jpeg" alt="Image 3" onclick="showDivIdAndAlt(this.parentElement.id, this.alt)">
+    <img src="static/vm.jpeg" alt="Image 4" onclick="showDivIdAndAlt(this.parentElement.id, this.alt)">
+</div>
+
+<p id="output"></p>
+
+</body>
+</html>
