@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Combined Functionality</title>
 <style>
+<form>
+
     /* Styles for drag and drop functionality */
     #image-container,
     #prop-container,
@@ -72,6 +74,33 @@
         width: 30%;
         background-color: #FCF3CF; /* Light yellow */
     }
+
+    /* Smooth edges for input fields and buttons */
+    input[type="text"],
+    select {
+        width: 100%;
+        padding: 10px;
+        margin: 5px 0;
+        box-sizing: border-box;
+        border-radius: 10px;
+        border: 1px solid #ccc;
+    }
+
+    button[type="submit"] {
+        padding: 10px 20px;
+        margin-top: 10px;
+        border-radius: 10px;
+        border: 1px solid #ccc;
+        background-color: #f0f0f0;
+        cursor: pointer;
+    }
+    
+
+    button[type="submit"]:hover {
+        background-color: #e0e0e0;
+    }
+    </form>
+    
 </style>
 </head>
 <body>
@@ -88,16 +117,30 @@
 
 </div>
 
-<div class="container container-3" id="prop-container" ondrop="drop(event)" ondragover="allowDrop(event)">
+<div class="container container-3" id="prop-container">
     <div id="properties-container" style="display: none;">
-        <label for="image-name">Image Name:</label>
-        <input type="text" id="image-name"><br><br>
-        <label for="image-category">Category:</label>
-        <select id="image-category">
-            <option value="flower">Flower</option>
-            <option value="plant">Plant</option>
-            <option value="tree">Tree</option>
-        </select>
+        <form id="properties-form">
+            <label for="image-name">Image Name:</label>
+            <input type="text" id="image-name"><br><br>
+            <label for="image-category">Category:</label>
+            <select id="image-category">
+                <option value="flower">Flower</option>
+                <option value="plant">Plant</option>
+                <option value="tree">Tree</option>
+            </select><br><br>
+            
+            <label for="features">Features:</label><br>
+            <input type="checkbox" id="feature1" name="features" value="colorful"> Colorful<br>
+            <input type="checkbox" id="feature2" name="features" value="fragrant"> Fragrant<br>
+            <input type="checkbox" id="feature3" name="features" value="rare"> Rare<br><br>
+            
+            <label for="popularity">Popularity:</label><br>
+            <input type="radio" id="popular" name="popularity" value="popular"> Popular<br>
+            <input type="radio" id="uncommon" name="popularity" value="uncommon"> Uncommon<br>
+            <input type="radio" id="rare" name="popularity" value="rare"> Rare<br><br>
+            
+            <button type="submit">Submit</button>
+        </form>
     </div>
 </div>
 
@@ -164,6 +207,12 @@
             document.getElementById('properties-container').style.display = 'none';
         }
     }
+
+    document.getElementById('properties-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        alert('Form submitted!');
+    });
 </script>
+
 </body>
 </html>
