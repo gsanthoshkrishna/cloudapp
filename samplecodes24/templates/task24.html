@@ -5,13 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Drag and Drop Images with Persistent Properties Display</title>
     <style>
+        
         #image-container,
         #drop-container,
         #load-container {
-            border: 2px dashed #aaa;
-            padding: 20px;
-            margin: 20px;
+            border: 1px solid rgb(6, 0, 0);
+            box-sizing: border-box;
+            float: left;
+            height: 700px; /* Increased height */
             min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 25%;
+            
         }
 
         .image-wrapper {
@@ -20,10 +27,12 @@
         }
 
         img {
-            max-width: 100px;
-            max-height: 100px;
+            max-width: 150px;
+            max-height: 150px;
             margin: 5px;
             cursor: pointer;
+            border: 2px solid transparent; /* Add default border */
+            transition: border 0.3s;
         }
 
         .selected {
@@ -32,32 +41,65 @@
 
         #properties-container {
             display: none;
-            border: 2px dashed #aaa;
-            padding: 20px;
-            margin: 20px;
+            border: 1px solid rgb(6, 0, 0);
+            box-sizing: border-box;
+            float: left;
+            height: 700px; /* Increased height */
             min-height: 100px;
+            text-align: center;
         }
+        .container {
+           border: 1px solid black;
+           box-sizing: border-box;
+           float: left;
+           height: 700px; /* Increased height */
+        }
+
+        .container-1 {
+            width: 25%;
+            background-color: #FADBD8; /* Light red */
+        }
+
+        .container-2 {
+            width: 25%;
+            background-color: #D1F2EB; /* Light green */
+        }
+
+        .container-3 {
+            width: 25%;
+            background-color: #FCF3CF; /* Light yellow */
+        }
+        .container-4 {
+            width: 25%;
+            background-color: #a4d8bd; /* Light blue */
+        }
+        #image-properties {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
     </style>
 </head>
 <body>
 
-<div id="image-container">
+<div class="container container-1" id="image-container">
     {% for resource in resources %}
         <img src="/static/{{ resource.image }}" alt="{{ resource.id }}" draggable="true" ondragstart="drag(event)">
     {% endfor %}
 </div>
 
-<div id="drop-container" ondrop="drop(event)" ondragover="allowDrop(event)">
+<div class="container container-2" id="drop-container" ondrop="drop(event)" ondragover="allowDrop(event)">
     Drop Here
 </div>
 
-<div id="load-container">
+<div class="container container-3" id="load-container">
     {% for image in load_images %}
         <img src="/static/{{ image.res_image }}" alt="{{ image.res_unique_id }}" onclick="toggleSelection(this)">
     {% endfor %}
 </div>
 
-<div id="properties-container">
+<div class="container container-4" id="properties-container">
     <div id="image-properties"></div>
 </div>
 
@@ -84,8 +126,8 @@
         var img = new Image();
         img.src = data;
         img.alt = altText;
-        img.style.maxWidth = "100px";
-        img.style.maxHeight = "100px";
+        img.style.maxWidth = "150px";
+        img.style.maxHeight = "150px";
         img.style.margin = "5px";
         img.style.cursor = "pointer";
         img.onclick = function() {
