@@ -32,6 +32,8 @@ def index():
             FROM tr_template_load
             INNER JOIN resource ON tr_template_load.res_id = resource.res_id
         """
+
+        print(query);
         cursor.execute(query)
         load_images = cursor.fetchall()
         
@@ -44,23 +46,42 @@ def index():
         if cnx:
             cnx.close()
 
-@app.route('/load_properties', methods=['GET'])
-def load_properties():
-    res_unique_id = request.args.get('res_unique_id')
+@app.route('/get_properties', methods=['GET'])
+def get_properties():
+    selected_id = request.args.get('selected_id')
+    div_id = request.args.get('div_id')
+    #TODO remove below temp code
+    div_id = "drop-container"
+    print("Selected ID:", selected_id)
+    print("Div ID:", div_id)
     cnx = None
+    cursor = None
     try:
         cnx = cnxpool.get_connection()
         cursor = cnx.cursor(dictionary=True)
-        query = """
+        query = ""
+
+        if div_id == "load-container":
+            query = """
             SELECT prop_name, prop_value 
             FROM tr_template_load 
             WHERE res_unique_id = %s
-        """
-        cursor.execute(query, (res_unique_id,))
+            """
+        elif div_id == "drop-container":
+            query = """
+            SELECT prop_name, prop_input_type, is_mandatory 
+            FROM resource_prop 
+            WHERE res_id = %s
+            """
+        else:
+            return jsonify({"error": "Invalid div_id"}), 400
+
+        print(query)
+        cursor.execute(query, (selected_id,))
         props = cursor.fetchall()
         return jsonify(props)
     except mysql.connector.Error as err:
-        return str(err)
+        return str(err), 500
     finally:
         if cursor:
             cursor.close()
