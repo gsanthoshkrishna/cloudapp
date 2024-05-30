@@ -6,12 +6,18 @@
     <title>Drag and Drop Images with Persistent Properties Display</title>
     <style>
         #image-container,
-        #drop-container,
+        #drop-container{
+            border: 2px dashed #aaa;
+            padding: 20px;
+            margin: 20px;
+            min-height: 100px;
+        }
         #load-container {
             border: 2px dashed #aaa;
             padding: 20px;
             margin: 20px;
             min-height: 100px;
+            display: none;
         }
 
         .image-wrapper {
@@ -31,7 +37,7 @@
         }
 
         #properties-container {
-            display: none;
+            display: inline-flex;
             border: 2px dashed #aaa;
             padding: 20px;
             margin: 20px;
