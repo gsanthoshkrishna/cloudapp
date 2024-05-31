@@ -59,7 +59,9 @@ def get_properties():
     try:
         cnx = cnxpool.get_connection()
         cursor = cnx.cursor(dictionary=True)
-        query = ""
+        query = """
+          
+        """
 
         if div_id == "load-container":
             query = """
@@ -76,7 +78,7 @@ def get_properties():
         else:
             return jsonify({"error": "Invalid div_id"}), 400
 
-        print(query)
+       
         cursor.execute(query, (selected_id,))
         props = cursor.fetchall()
         return jsonify(props)
