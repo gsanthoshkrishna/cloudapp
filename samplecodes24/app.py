@@ -44,20 +44,29 @@ def index():
         if cnx:
             cnx.close()
 
-@app.route('/load_properties', methods=['GET'])
-def load_properties():
-    res_unique_id = request.args.get('res_unique_id')
+@app.route('/get_properties', methods=['GET'])
+def get_properties():
+
+    res_unique_id = request.args.get('selected_id')
+    div_id = request.args.get('div_id')
     cnx = None
     try:
         cnx = cnxpool.get_connection()
         cursor = cnx.cursor(dictionary=True)
         query = """
-          SELECT tpl.prop_name, tpl.prop_value, rp.prop_input_type, rp.is_mandatory
-          FROM tr_template_load tpl
-          JOIN resource_prop rp ON tpl.prop_id = rp.res_prop_id
-          WHERE tpl.res_unique_id = %s;
-
+          SELECT prop_name, prop_input_type, is_mandatory 
+          FROM resource_prop 
+          WHERE res_id = %s
         """
+        if div_id == "load-container":
+            query = """
+            SELECT tpl.prop_name, tpl.prop_value, rp.prop_input_type, rp.is_mandatory
+            FROM tr_template_load tpl
+            JOIN resource_prop rp ON tpl.prop_id = rp.res_prop_id
+            WHERE tpl.res_unique_id = %s;
+
+            """
+        print(res_unique_id)
         cursor.execute(query, (res_unique_id,))
         props = cursor.fetchall()
         return jsonify(props)

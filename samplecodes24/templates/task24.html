@@ -130,12 +130,13 @@
         img.style.maxHeight = "150px";
         img.style.margin = "5px";
         img.style.cursor = "pointer";
-        img.onclick = function() {
-            toggleSelection(img);
-        };
+        
         wrapper.appendChild(img);
 
         document.getElementById('drop-container').appendChild(wrapper);
+        img.onclick = function() {
+            toggleSelection(img);
+        };
     }
 
     function toggleSelection(img) {
@@ -144,12 +145,14 @@
         }
         currentImage = img;
         currentImage.classList.add('selected');
-        displayProperties(currentImage.alt);
+        displayProperties(currentImage.alt,img.parentElement.id);
     }
 
-    function displayProperties(res_unique_id) {
+    function displayProperties(selected_id,div_id) {
+        console.log(div_id);
         var xhr = new XMLHttpRequest();
-        xhr.open('GET', '/load_properties?res_unique_id=' + encodeURIComponent(res_unique_id), true);
+        var url = '/get_properties?selected_id=' + encodeURIComponent(selected_id) + '&div_id=' + encodeURIComponent(div_id);
+        xhr.open('GET', url, true);
         xhr.onreadystatechange = function() {
             if (xhr.readyState == 4 && xhr.status == 200) {
                 var properties = JSON.parse(xhr.responseText);
