@@ -52,9 +52,11 @@ def load_properties():
         cnx = cnxpool.get_connection()
         cursor = cnx.cursor(dictionary=True)
         query = """
-            SELECT prop_name, prop_value 
-            FROM tr_template_load 
-            WHERE res_unique_id = %s
+          SELECT tpl.prop_name, tpl.prop_value, rp.prop_input_type, rp.is_mandatory
+          FROM tr_template_load tpl
+          JOIN resource_prop rp ON tpl.prop_id = rp.res_prop_id
+          WHERE tpl.res_unique_id = %s;
+
         """
         cursor.execute(query, (res_unique_id,))
         props = cursor.fetchall()
@@ -66,6 +68,7 @@ def load_properties():
             cursor.close()
         if cnx:
             cnx.close()
+
 
 if __name__ == "__main__":
     app.run(debug=True)
