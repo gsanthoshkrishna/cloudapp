@@ -1,5 +1,5 @@
 CREATE TABLE tr_template_load (
-    template_id INT PRIMARY KEY,
+    template_id INT PRIMARY KEY AUTO_INCREMENT,
     res_id INT,
     prop_id INT,
     prop_name VARCHAR(30),
