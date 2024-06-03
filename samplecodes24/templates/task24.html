@@ -46,7 +46,10 @@
             float: left;
             height: 700px; /* Increased height */
             min-height: 100px;
-            text-align: center;
+            text-align: left;
+            padding: 10px; /* Added padding */
+            width: 25%; /* Adjusted width */
+            overflow-y: auto;
         }
         .container {
            border: 1px solid black;
@@ -77,6 +80,22 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+        }
+        .property-item {
+            display: flex;
+            align-items: left;
+            margin-bottom: 10px; /* Added spacing between properties */
+            width: 100%; /* Full width for property items */
+        }
+
+        .property-item label {
+            width: 150px; /* Fixed width for labels */
+            margin-right: 10px;
+        }
+
+        .property-item input,
+        .property-item select {
+            flex: 1;
         }
 
     </style>
