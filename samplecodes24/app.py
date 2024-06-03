@@ -87,5 +87,45 @@ def get_properties():
         if cnx:
             cnx.close()
 
+@app.route('/save_properties', methods=['POST'])
+def save_properties():
+    cnx = None
+    try:
+        data = request.form
+        res_unique_id = data.get('selected_id')
+        container = data.get('container')
+        properties = {key: data[key] for key in data if key not in ('res_uniq_id', 'container')}
+        
+        cnx = cnxpool.get_connection()
+        cursor = cnx.cursor()
+        
+        for prop_name, prop_value in properties.items():
+            # Find the corresponding prop_id
+            query = "SELECT res_prop_id FROM resource_prop WHERE prop_name = %s"
+            cursor.execute(query, (prop_name,))
+            prop_id_result = cursor.fetchone()
+            if prop_id_result:
+                prop_id = prop_id_result[0]
+                # Update or insert the property in tr_template_load
+                query = """
+                    INSERT INTO tr_template_load (res_unique_id, prop_id, prop_name, prop_value)
+                    VALUES (%s, %s, %s, %s)
+                    ON DUPLICATE KEY UPDATE prop_value = VALUES(prop_value);
+
+                """
+                cursor.execute(query, (res_unique_id, prop_id, prop_name, prop_value))
+        
+        cnx.commit()
+        return 'Properties saved successfully', 200
+    except mysql.connector.Error as err:
+        return str(err)
+    except Exception as e:
+        return str(e)
+    finally:
+        if cursor:
+            cursor.close()
+        if cnx:
+            cnx.close()
+
 if __name__ == "__main__":
     app.run(debug=True)
