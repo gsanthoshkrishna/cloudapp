@@ -2,6 +2,8 @@ from flask import Flask, request, jsonify, render_template
 import json
 import mysql.connector
 from mysql.connector import pooling
+from datetime import datetime
+
 
 app = Flask(__name__)
 
@@ -71,11 +73,12 @@ def get_properties():
         """
         if div_id == "load-container":
             query = """
-            SELECT tpl.prop_name, tpl.prop_value, rp.prop_input_type, rp.is_mandatory
-            FROM tr_template_load tpl
-            JOIN resource_prop rp ON tpl.prop_id = rp.res_prop_id
-            WHERE tpl.res_unique_id = %s;
+                SELECT tpl.prop_name, tpl.prop_value, rp.prop_input_type, rp.is_mandatory
+                FROM tr_template_load tpl
+                JOIN resource_prop rp ON tpl.prop_id = rp.res_prop_id
+                WHERE tpl.res_unique_id = %s;
             """
+        
         cursor.execute(query, (res_unique_id,))
         props = cursor.fetchall()
         return jsonify(props)
@@ -86,46 +89,68 @@ def get_properties():
             cursor.close()
         if cnx:
             cnx.close()
+def get_unique_id():
+    now = datetime.now()
+    return now.strftime("%m%d%H%M%S")
 
 @app.route('/save_properties', methods=['POST'])
 def save_properties():
     cnx = None
+    cursor = None
+    res_uniq_id = get_unique_id()
+    print("Generated unique ID:", res_uniq_id)
+
     try:
-        data = request.form
-        res_unique_id = data.get('selected_id')
-        container = data.get('container')
-        properties = {key: data[key] for key in data if key not in ('res_uniq_id', 'container')}
+        data = request.get_json()
+        print("Received data:", data)
         
+        # Establish connection to MySQL database
         cnx = cnxpool.get_connection()
         cursor = cnx.cursor()
-        
-        for prop_name, prop_value in properties.items():
-            # Find the corresponding prop_id
-            query = "SELECT res_prop_id FROM resource_prop WHERE prop_name = %s"
-            cursor.execute(query, (prop_name,))
-            prop_id_result = cursor.fetchone()
-            if prop_id_result:
-                prop_id = prop_id_result[0]
-                # Update or insert the property in tr_template_load
+
+        for prop in data:
+            prop_name = prop['prop_name']
+            prop_value = prop['prop_value']
+            res_id = prop['res_id']
+
+            print("Prop name:", prop_name)
+
+            # Retrieve the res_prop_id from resource_prop
+            # Assuming prop_name is a variable containing the value you want to search for
+            #select  res_prop_id from resource_prop where prop_name = 'name' and  res_id = 3
+            #"select  res_prop_id from resource_prop where prop_name = '" + p_name + "' and  res_id = " + r_id
+            query = "SELECT res_prop_id FROM resource_prop WHERE prop_name = '" + prop_name + "' and res_id = '" + res_id + "' "
+            cursor.execute(query)
+            prop_det = cursor.fetchone()
+            if prop_det:
+                prop_id = prop_det[0]
+
+                # Insert or update the property in tr_template_load
                 query = """
                     INSERT INTO tr_template_load (res_unique_id, prop_id, prop_name, prop_value)
                     VALUES (%s, %s, %s, %s)
-                    ON DUPLICATE KEY UPDATE prop_value = VALUES(prop_value);
-
+                    ON DUPLICATE KEY UPDATE prop_value = VALUES(prop_value)
                 """
-                cursor.execute(query, (res_unique_id, prop_id, prop_name, prop_value))
-        
+                cursor.execute(query, (res_uniq_id, prop_id, prop_name, prop_value))
+                print("Property saved successfully")
+            else:
+                print("No result found for the given prop_name")
+
         cnx.commit()
-        return 'Properties saved successfully', 200
+        return jsonify({"status": "success"}), 200
     except mysql.connector.Error as err:
-        return str(err)
+        return jsonify({"status": "error", "message": str(err)}), 500
     except Exception as e:
-        return str(e)
+        return jsonify({"status": "error", "message": str(e)}), 500
     finally:
         if cursor:
+            cursor.fetchall()  # Consume unread results
             cursor.close()
         if cnx:
             cnx.close()
 
 if __name__ == "__main__":
     app.run(debug=True)
+
+
+

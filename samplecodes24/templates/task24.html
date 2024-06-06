@@ -115,7 +115,7 @@
 
 <div class="container container-3" id="load-container">
     {% for image in load_images %}
-        <div class="image-wrapper">
+        <div class="image-wrapper"> 
             <img src="/static/{{ image.res_image }}" alt="{{ image.res_unique_id }}" onclick="toggleSelection(this, 'load-container')">
         </div>
     {% endfor %}
@@ -173,7 +173,9 @@
         currentContainer = container;
         currentImage.classList.add('selected');
         displayProperties(currentImage.alt, currentContainer);
+        
     }
+        
 
     function displayProperties(selected_id, div_id) {
         var xhr = new XMLHttpRequest();
@@ -185,11 +187,10 @@
                 var propertiesDiv = document.getElementById('image-properties');
                 propertiesDiv.innerHTML = ''; // Clear previous properties
                 properties.forEach(function(prop) {
-                    let propDiv = document.createElement('div');
-                    propDiv.className = 'property-item';
+                    
                     let label = document.createElement('label');
                     label.textContent = prop.prop_name;
-                    propDiv.appendChild(label);
+                    propertiesDiv.appendChild(label);
 
                     let inputElement;
                     switch(prop.prop_input_type) {
@@ -231,9 +232,10 @@
                             inputElement.value = prop.prop_value || '';
                             inputElement.required = prop.is_mandatory == "yes";
                     }
-                    propDiv.appendChild(inputElement);
-                    propertiesDiv.appendChild(propDiv);
+                    propertiesDiv.appendChild(inputElement);
+                    
                 });
+                propertiesDiv.setAttribute('res_id', selected_id);
                 document.getElementById('properties-container').style.display = 'block';
             }
         };
@@ -241,21 +243,45 @@
     }
 
     function saveProperties(event) {
-        event.preventDefault();
-        var form = document.getElementById('properties-form');
-        var formData = new FormData(form);
-        formData.append('res_uniq_id', currentImage.alt);
-        formData.append('container', currentContainer);
+    event.preventDefault();
+    console.log('saveProperties function called');
 
-        var xhr = new XMLHttpRequest();
-        xhr.open('POST', '/save_properties', true);
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState == 4 && xhr.status == 200) {
-                alert('Properties saved successfully');
-            }
-        };
-        xhr.send();
-    }
+    var form = document.getElementById('properties-form');
+    var formData = new FormData(form);
+
+    var propValues = [];
+    formData.forEach((value, key) => {
+        propValues.push({ prop_name: key, prop_value: value });
+    });
+
+    var propertiesDiv = document.getElementById('image-properties');
+    var res_id = propertiesDiv.getAttribute('res_id');
+    
+    propValues.push({ prop_name: 'res_id', prop_value: res_id });
+
+    console.log(propValues);
+        
+
+
+
+    var xhr = new XMLHttpRequest();
+    
+    xhr.open('POST', '/save_properties', true);
+    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest'); // Useful for CSRF protection in some frameworks
+    xhr.setRequestHeader('Content-Type', 'application/json');
+   
+
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState == 4 && xhr.status == 200) {
+            alert('Properties saved successfully');
+        }
+    };
+
+    xhr.send(JSON.stringify(propValues));
+}
+
+
+
 </script>
 
 </body>
