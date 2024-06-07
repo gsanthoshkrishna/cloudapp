@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Hover Name Display</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .image-container {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 50px;
+        }
+
+        .hover-image {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            cursor: pointer;
+        }
+
+        .image-name {
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="image-container">
+        <img src="dora.jpeg" alt="Image 1" class="hover-image" data-name= "DORA">
+        <img src="tom.jpeg" alt="Image 2" class="hover-image" data-name="TOM">
+        <img src="jerry.jpeg" alt="Image 3" class="hover-image" data-name="JERRY">
+    </div>
+    <div id="image-name" class="image-name"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const images = document.querySelectorAll('.hover-image');
+            const imageNameDisplay = document.getElementById('image-name');
+
+            images.forEach(image => {
+                image.addEventListener('mouseover', (event) => {
+                    const name = event.target.getAttribute('data-name');
+                    const rect = event.target.getBoundingClientRect();
+                    
+                    imageNameDisplay.style.top = `${rect.top - 30}px`;
+                    imageNameDisplay.style.left = `${rect.left}px`;
+                    imageNameDisplay.textContent = name;
+                    imageNameDisplay.style.display = 'block';
+                });
+
+                image.addEventListener('mouseout', () => {
+                    imageNameDisplay.style.display = 'none';
+                });
+            });
+        });
+    </script>
+</body>
+</html>
