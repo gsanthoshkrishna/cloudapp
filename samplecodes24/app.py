@@ -65,21 +65,24 @@ def get_properties():
         
         res_unique_id = request.args.get('selected_id')
         div_id = request.args.get('div_id')
+        print(div_id)
         
-        query = """
+        query = f"""
           SELECT prop_name, prop_input_type, is_mandatory 
           FROM resource_prop 
-          WHERE res_id = %s
+          WHERE res_id = {res_unique_id}
         """
         if div_id == "load-container":
-            query = """
+            query = f"""
                 SELECT tpl.prop_name, tpl.prop_value, rp.prop_input_type, rp.is_mandatory
                 FROM tr_template_load tpl
                 JOIN resource_prop rp ON tpl.prop_id = rp.res_prop_id
-                WHERE tpl.res_unique_id = %s;
+                WHERE tpl.res_unique_id = {res_unique_id}
             """
+        print("----------------test10----------")
+        print(query)
         
-        cursor.execute(query, (res_unique_id,))
+        cursor.execute(query)
         props = cursor.fetchall()
         return jsonify(props)
     except mysql.connector.Error as err:
@@ -101,37 +104,64 @@ def save_properties():
     print("Generated unique ID:", res_uniq_id)
 
     try:
-        data = request.get_json()
-        print("Received data:", data)
+
+        sent_json = request.get_json()
+        data = sent_json['properties']
+        res_id = sent_json['res_id']
+        print("Received data:", sent_json)
         
         # Establish connection to MySQL database
         cnx = cnxpool.get_connection()
         cursor = cnx.cursor()
 
+        prefix_query = "SELECT prefix FROM resource WHERE res_id = '" + res_id + "'"
+        print(prefix_query)
+        cursor.execute(prefix_query)
+        prefix_result = cursor.fetchone()
+        print(prefix_result)
+        if not prefix_result:
+            return 'Resource ID not found', 400
+
+        prefix = prefix_result[0]
+        print(prefix)
+        unique_id = get_unique_id()
+        res_unique_id = prefix + "-" + unique_id #sqrl-0603195023
+        print("Generated unique ID:", res_unique_id)
+        template_id = unique_id
+        print("Generated unique ID:",template_id )
+
         for prop in data:
+            #print('test print')
+            print(prop)
             prop_name = prop['prop_name']
             prop_value = prop['prop_value']
-            res_id = prop['res_id']
-
-            print("Prop name:", prop_name)
+            
+            
+            
+            print("Prop name:"+prop_name )
 
             # Retrieve the res_prop_id from resource_prop
             # Assuming prop_name is a variable containing the value you want to search for
             #select  res_prop_id from resource_prop where prop_name = 'name' and  res_id = 3
             #"select  res_prop_id from resource_prop where prop_name = '" + p_name + "' and  res_id = " + r_id
             query = "SELECT res_prop_id FROM resource_prop WHERE prop_name = '" + prop_name + "' and res_id = '" + res_id + "' "
+            print('test')
+            print(query)
             cursor.execute(query)
             prop_det = cursor.fetchone()
+            print(prop_det)
             if prop_det:
                 prop_id = prop_det[0]
-
+                print(prop_id)
                 # Insert or update the property in tr_template_load
-                query = """
-                    INSERT INTO tr_template_load (res_unique_id, prop_id, prop_name, prop_value)
-                    VALUES (%s, %s, %s, %s)
-                    ON DUPLICATE KEY UPDATE prop_value = VALUES(prop_value)
+                insert_query = f"""
+                   INSERT INTO tr_template_load (template_id, res_id, prop_name, prop_value, res_unique_id, prop_id)
+                   VALUES ('{template_id}', {res_id}, '{prop_name}', '{prop_value}', '{res_unique_id}', {prop_id})
                 """
-                cursor.execute(query, (res_uniq_id, prop_id, prop_name, prop_value))
+                print("Executing query:", insert_query)
+                cursor.execute(insert_query)
+                check = cursor.fetchone()
+                print(check)
                 print("Property saved successfully")
             else:
                 print("No result found for the given prop_name")

@@ -257,9 +257,14 @@
     var propertiesDiv = document.getElementById('image-properties');
     var res_id = propertiesDiv.getAttribute('res_id');
     
-    propValues.push({ prop_name: 'res_id', prop_value: res_id });
+    
 
     console.log(propValues);
+
+    var dataToSend = {
+            res_id: res_id,
+            properties: propValues
+        };
         
 
 
@@ -277,7 +282,7 @@
         }
     };
 
-    xhr.send(JSON.stringify(propValues));
+    xhr.send(JSON.stringify(dataToSend));
 }
 
 
