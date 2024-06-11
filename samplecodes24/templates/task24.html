@@ -116,8 +116,10 @@
 <div class="container container-3" id="load-container">
     {% for image in load_images %}
         <div class="image-wrapper"> 
-            <img src="/static/{{ image.res_image }}" alt="{{ image.res_unique_id }}" onclick="toggleSelection(this, 'load-container')">
-        </div>
+            <img src="/static/{{ image.res_image }}" alt="{{ image.res_unique_id }}" onclick="toggleSelection(this, 'load-container')" >
+        </div> <!--The this keyword is passed as the first argument, which refers to the HTML element that was clicked
+                     The toggleSelection function takes two parameters: the button element (this) and a container ID ('load-container').
+                It finds the container element by its ID.-->
     {% endfor %}
 </div>
 
@@ -130,52 +132,52 @@
 
 <script>
     let currentImage = null;
-    let currentContainer = null;
+    let currentContainer = null; // when you need to keep track of elements or values that might be assigned later
 
     function allowDrop(event) {
-        event.preventDefault();
+        event.preventDefault(); // allow target element to accept drop actions.
     }
 
     function drag(event) {
-        event.dataTransfer.setData("text", event.target.src);
+        event.dataTransfer.setData("text", event.target.src); // event.target refers to the element that is being dragged. .src gets the value
         event.dataTransfer.setData("alt", event.target.alt);
     }
 
     function drop(event) {
         event.preventDefault();
-        var data = event.dataTransfer.getData("text");
+        var data = event.dataTransfer.getData("text"); // Retrieves the src and alt data of the dragged image from the dataTransfer object
         var altText = event.dataTransfer.getData("alt");
 
         var wrapper = document.createElement('div');
-        wrapper.className = 'image-wrapper';
+        wrapper.className = 'image-wrapper'; // Creates a new div element to act as a wrapper for the dropped image and assigns it a class for styling purposes.
 
         var img = new Image();
         img.src = data;
         img.alt = altText;
         img.style.maxWidth = "150px";
-        img.style.maxHeight = "150px";
+        img.style.maxHeight = "150px"; // style of the image in drop container
         img.style.margin = "5px";
         img.style.cursor = "pointer";
 
         wrapper.appendChild(img);
 
-        document.getElementById('drop-container').appendChild(wrapper);
+        document.getElementById('drop-container').appendChild(wrapper); // This appends the wrapper element (which contains the image) as a child of the drop-container element
         img.onclick = function() {
-            toggleSelection(img, 'drop-container');
+            toggleSelection(img, 'drop-container'); // select the image in drop container
         };
     }
 
-    function toggleSelection(img, container) {
+    function toggleSelection(img, container) { // Checks if there is a currently selected image.
         if (currentImage) {
-            currentImage.classList.remove('selected');
+            currentImage.classList.remove('selected'); // deselects the previously selected image
         }
-        currentImage = img;
-        currentContainer = container;
-        currentImage.classList.add('selected');
+        currentImage = img; // newly clicked image
+        currentContainer = container; // newly clicked container
+        currentImage.classList.add('selected'); // newly selected
+        console.log('Selected ID:', currentImage.alt); // Debug log
+        console.log('Container:', currentContainer); // Debug log
         displayProperties(currentImage.alt, currentContainer);
-        
     }
-        
 
     function displayProperties(selected_id, div_id) {
         var xhr = new XMLHttpRequest();
@@ -183,7 +185,7 @@
         xhr.open('GET', url, true);
         xhr.onreadystatechange = function() {
             if (xhr.readyState == 4 && xhr.status == 200) {
-                var properties = JSON.parse(xhr.responseText);
+                var properties = JSON.parse(xhr.responseText);//doubt
                 var propertiesDiv = document.getElementById('image-properties');
                 propertiesDiv.innerHTML = ''; // Clear previous properties
                 properties.forEach(function(prop) {
@@ -235,58 +237,53 @@
                     propertiesDiv.appendChild(inputElement);
                     
                 });
-                propertiesDiv.setAttribute('res_id', selected_id);
+                propertiesDiv.setAttribute('res_id',
+                 selected_id);
                 document.getElementById('properties-container').style.display = 'block';
             }
         };
         xhr.send();
     }
 
+
+    
+
     function saveProperties(event) {
-    event.preventDefault();
-    console.log('saveProperties function called');
+        event.preventDefault();
+        console.log('saveProperties function called');
 
-    var form = document.getElementById('properties-form');
-    var formData = new FormData(form);
+        var form = document.getElementById('properties-form');
+        var formData = new FormData(form);
 
-    var propValues = [];
-    formData.forEach((value, key) => {
-        propValues.push({ prop_name: key, prop_value: value });
-    });
+        var propValues = [];
+        formData.forEach((value, key) => {
+            propValues.push({ prop_name: key, prop_value: value });
+        });
 
-    var propertiesDiv = document.getElementById('image-properties');
-    var res_id = propertiesDiv.getAttribute('res_id');
-    
-    
+        var propertiesDiv = document.getElementById('image-properties');
+        var res_id = propertiesDiv.getAttribute('res_id');
+        
+        console.log(propValues);
 
-    console.log(propValues);
-
-    var dataToSend = {
+        var dataToSend = {
             res_id: res_id,
             properties: propValues
         };
         
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/save_properties', true);
+        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest'); // Useful for CSRF protection in some frameworks
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState == 4 && xhr.status == 200) {
+                alert('Properties saved successfully');
+            }
+        };
 
-
-
-    var xhr = new XMLHttpRequest();
-    
-    xhr.open('POST', '/save_properties', true);
-    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest'); // Useful for CSRF protection in some frameworks
-    xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.send(JSON.stringify(dataToSend));
+    }
    
-
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState == 4 && xhr.status == 200) {
-            alert('Properties saved successfully');
-        }
-    };
-
-    xhr.send(JSON.stringify(dataToSend));
-}
-
-
-
 </script>
 
 </body>

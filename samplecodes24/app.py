@@ -70,14 +70,14 @@ def get_properties():
         query = f"""
           SELECT prop_name, prop_input_type, is_mandatory 
           FROM resource_prop 
-          WHERE res_id = {res_unique_id}
+          WHERE res_id = '{res_unique_id}'
         """
         if div_id == "load-container":
             query = f"""
                 SELECT tpl.prop_name, tpl.prop_value, rp.prop_input_type, rp.is_mandatory
                 FROM tr_template_load tpl
                 JOIN resource_prop rp ON tpl.prop_id = rp.res_prop_id
-                WHERE tpl.res_unique_id = {res_unique_id}
+                WHERE tpl.res_unique_id = '{res_unique_id}'
             """
         print("----------------test10----------")
         print(query)
@@ -178,6 +178,7 @@ def save_properties():
             cursor.close()
         if cnx:
             cnx.close()
+
 
 if __name__ == "__main__":
     app.run(debug=True)
