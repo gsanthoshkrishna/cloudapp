@@ -312,6 +312,11 @@
         tooltip.style.left = img.getBoundingClientRect().left + window.scrollX + 'px';
         tooltip.style.top = img.getBoundingClientRect().top + window.scrollY - tooltip.offsetHeight + 'px';
     }
+    function hideTooltip() {
+    var tooltip = document.getElementById('tooltip');
+    tooltip.style.display = 'none';
+   }
+
 
     document.addEventListener('mousemove', function(event) {
         var tooltip = document.getElementById('tooltip');
