@@ -14,7 +14,7 @@ with open('config.json') as config_file:
 # Create connection pool
 cnxpool = pooling.MySQLConnectionPool(
     pool_name="mypool",
-    pool_size=5,
+    pool_size=10,
     **config
 )
 
@@ -179,8 +179,39 @@ def save_properties():
         if cnx:
             cnx.close()
 
+@app.route('/get_resource_cost', methods=['GET'])
+def get_resource_cost():
+    cnx = None
+    cursor = None
+   
+    
+    try:
+        cnx = cnxpool.get_connection()
+        cursor = cnx.cursor()
+        res_id = request.args.get('res_id')
+        print(res_id)
+        query = f"SELECT cost FROM resource_cost WHERE res_unique_id = '{res_id}'"
+        print(query)
+    
+        cursor.execute(query)
+        cost = cursor.fetchall()
+        print(cost)
 
-if __name__ == "__main__":
+        if cost:
+            return jsonify({'cost': cost[0]})
+        else:
+            return jsonify({'error': 'Resource not found'}), 404
+    except mysql.connector.Error as err:
+        return jsonify({'error': str(err)}), 500
+    except Exception as ex:
+        return jsonify({'error': str(ex)}), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if cnx:
+            cnx.close()
+
+if __name__ == '__main__':
     app.run(debug=True)
 
 

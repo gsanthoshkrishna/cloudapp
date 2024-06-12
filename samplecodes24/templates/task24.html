@@ -115,13 +115,16 @@
 
 <div class="container container-3" id="load-container">
     {% for image in load_images %}
-        <div class="image-wrapper"> 
-            <img src="/static/{{ image.res_image }}" alt="{{ image.res_unique_id }}" onclick="toggleSelection(this, 'load-container')" >
-        </div> <!--The this keyword is passed as the first argument, which refers to the HTML element that was clicked
-                     The toggleSelection function takes two parameters: the button element (this) and a container ID ('load-container').
-                It finds the container element by its ID.-->
+        <div class="image-wrapper">
+            <img src="/static/{{ image.res_image }}" alt="{{ image.res_unique_id }}" 
+                 onmouseover="getResourceCost(this)" onmouseout="hideTooltip()"
+                 onclick="toggleSelection(this, 'load-container')">
+        </div><!--The this keyword is passed as the first argument, which refers to the HTML element that was clicked
+        The toggleSelection function takes two parameters: the button element (this) and a container ID ('load-container').
+   It finds the container element by its ID.-->
     {% endfor %}
 </div>
+
 
 <div class="container container-4" id="properties-container">
     <form id="properties-form" onsubmit="saveProperties(event)">
@@ -129,6 +132,8 @@
         <button type="submit">Save Properties</button>
     </form>
 </div>
+
+<div id="tooltip" style="display:none; position: absolute; background-color: white; border: 1px solid black; padding: 5px;"></div>
 
 <script>
     let currentImage = null;
@@ -283,6 +288,45 @@
 
         xhr.send(JSON.stringify(dataToSend));
     }
+    function getResourceCost(img) {
+        var res_id = img.alt;
+        var xhr = new XMLHttpRequest();
+        var url = '/get_resource_cost?res_id=' + encodeURIComponent(res_id);
+
+        xhr.open('GET', url, true);
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState == 4 && xhr.status == 200) {
+                var response = JSON.parse(xhr.responseText);
+                if (response.cost) {
+                    showTooltip(element, 'Cost: ' + response.cost);
+                }
+            }
+        };
+        xhr.send();
+    }
+
+    function showTooltip(img, text) {
+        var tooltip = document.getElementById('tooltip');
+        tooltip.innerHTML = text;
+        tooltip.style.display = 'block';
+        tooltip.style.left = element.getBoundingClientRect().left + window.scrollX + 'px';
+        tooltip.style.top = element.getBoundingClientRect().top + window.scrollY - tooltip.offsetHeight + 'px';
+    }
+
+    document.addEventListener('mousemove', function(event) {
+        var tooltip = document.getElementById('tooltip');
+        if (tooltip.style.display === 'block') {
+            tooltip.style.left = event.pageX + 'px';
+            tooltip.style.top = event.pageY - tooltip.offsetHeight + 'px';
+        }
+    });
+
+    document.addEventListener('mouseout', function(event) {
+        var tooltip = document.getElementById('tooltip');
+        if (!event.relatedTarget || !event.relatedTarget.closest('.container-1 img')) {
+            tooltip.style.display = 'none';
+        }
+    });
    
 </script>
 
