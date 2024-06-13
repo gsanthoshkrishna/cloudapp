@@ -1,0 +1,104 @@
+qry = "select cost from resource_cost where res_unique_id = 'x'  "
+    
+    <div class="container container-3" id="load-container">
+    {% for image in load_images %}
+        <div class="image-wrapper"> 
+            <img src="/static/{{ image.res_image }}" alt="{{ image.res_unique_id }}" onclick="toggleSelection(this, 'load-container')" mouseover="showCost(this)">
+        </div>
+    {% endfor %}
+</div>
+
+function showCost(img){              
+    imageNameDisplay.style.top = `${rect.top - 30}px`;
+    imageNameDisplay.style.left = `${rect.left}px`;
+    imageNameDisplay.textContent = img.alt;
+    imageNameDisplay.style.display = 'block';
+    
+}
+
+function toggleSelection(img, container) {
+        if (currentImage) {
+            currentImage.classList.remove('selected');
+        }
+        currentImage = img;
+        currentContainer = container;
+        currentImage.classList.add('selected');
+        displayProperties(currentImage.alt, currentContainer);
+        
+    }
+
+
+    qsn: res_unique_id ni data_name lo ki ela techukovali....
+    load container lo image tag lo alt lo undhi......
+    
+    pyna imge tag lo alt ni toggleselction lo data-name la pass cheyacha..
+
+    alt value ni showCost lo elaa pass cheyali?
+
+    toggleSelection ani function ela undhi...same alne showCost ani veroka function manam create cheskuni
+    aa funtion lo img(image tag) use chesi hover.html lo ---imageNameDisplay.textContent = name----
+    ani ichina place lo...name place lo img.alt ivali....
+    pls check once with hover.html
+
+  html lo define chesina showCost function ni python lo ela use cheyali.......
+  
+python lo oka function create chesi dhainiki res_unique_id ni pass  cheyali
+
+aa unique id html lo imageNameDisplay.textContent = img.alt; undhi
+
+
+
+chatgpt trail
+
+////////////////
+function showCost(img) {
+    const rect = img.getBoundingClientRect(); // Get the position of the image
+    const resourceCostDisplay = document.getElementById('loadcontainer'); // Ensure you have an element with this ID
+
+    resourceCostDisplay.style.top = `${rect.top - 30}px`;
+    resourceCostDisplay.style.left = `${rect.left}px`;
+    resourceCostDisplay.textContent = img.alt;
+    resourceCostDisplay.style.display = 'block';
+
+    // Send the image name to the server
+    fetch('/get_resource_cost', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ resuid: img.alt }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log(data.message); // Log the server response
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+// Example usage: Attach this function to an event listener
+document.querySelectorAll('img').forEach(img => {
+    img.addEventListener('mouseenter', () => showCost(img));
+    img.addEventListener('mouseleave', () => {
+        document.getElementById('resourceCostDisplay').style.display = 'none';
+    });
+});
+
+@app.route('/get_resource_cost', methods=['GET'])
+def get_resource_cost():
+    data = request.json
+    ruid = data.get('resuid')
+    qry = "select cost from resource_cost where res_unique_id = '" + ruid + "';"
+    print(qry)
+    cursor.execute(qry)
+    res_cost = cursor.fetchall();
+    print(res_cost)
+
+
+
+manam method ni get_resource_cost ni oka parameter pass chestu app.route lo ichindhi correct ha...
+get_resource_cost method lo res_cost ni ela return cheyali
+
+
+///

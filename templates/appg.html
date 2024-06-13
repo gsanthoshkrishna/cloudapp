@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drag and Drop Images with Persistent Properties Display</title>
+    <style>
+        #image-container,
+        #drop-container,
+        #load-container {
+            border: 1px solid rgb(6, 0, 0);
+            box-sizing: border-box;
+            float: left;
+            height: 700px;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 25%;
+        }
+
+        .image-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        img {
+            max-width: 150px;
+            max-height: 150px;
+            margin: 5px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: border 0.3s;
+        }
+
+        .selected {
+            border: 2px solid blue;
+        }
+
+        #properties-container {
+            display: none;
+            border: 1px solid rgb(6, 0, 0);
+            box-sizing: border-box;
+            float: left;
+            height: 700px;
+            min-height: 100px;
+            text-align: left;
+            padding: 10px;
+            width: 25%;
+            overflow-y: auto;
+        }
+
+        .container {
+            border: 1px solid black;
+            box-sizing: border-box;
+            float: left;
+            height: 700px;
+        }
+
+        .container-1 {
+            width: 25%;
+            background-color: #FADBD8;
+        }
+
+        .container-2 {
+            width: 25%;
+            background-color: #D1F2EB;
+        }
+
+        .container-3 {
+            width: 25%;
+            background-color: #FCF3CF;
+        }
+
+        .container-4 {
+            width: 25%;
+            background-color: #a4d8bd;
+        }
+
+        #image-properties {
+            display: flex;
+            flex-direction: column;
+            align-items: left;
+        }
+
+        .property-item {
+            display: flex;
+            align-items: left;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+
+        .property-item label {
+            width: 150px;
+            margin-right: 10px;
+        }
+
+        .property-item input,
+        .property-item select {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container container-1" id="image-container">
+    {% for resource in resources %}
+        <img src="/static/{{ resource.image }}" alt="{{ resource.id }}" draggable="true" ondragstart="drag(event)">
+    {% endfor %}
+</div>
+
+<div class="container container-2" id="drop-container" ondrop="drop(event)" ondragover="allowDrop(event)">
+    Drop Here
+</div>
+
+<div class="container container-3" id="load-container">
+    {% for image in load_images %}
+        <div class="image-wrapper" id="image-wrapper"> 
+            <img src="/static/{{ image.res_image }}" alt="{{ image.res_unique_id }}" onclick="toggleSelection(this, 'load-container')" onmouseover="getResourceCost(this)">
+
+        </div>
+    {% endfor %}
+</div>
+
+<div class="container container-4" id="properties-container">
+    <form id="properties-form" onsubmit="saveProperties(event)">
+        <div id="image-properties"></div>
+        <button type="submit">Save Properties</button>
+    </form>
+</div>
+
+<script>
+    let currentImage = null;
+    let currentContainer = null;
+
+    function allowDrop(event) {
+        event.preventDefault();
+    }
+
+    function drag(event) {
+        event.dataTransfer.setData("text", event.target.src);
+        event.dataTransfer.setData("alt", event.target.alt);
+    }
+
+    function drop(event) {
+        event.preventDefault();
+        var data = event.dataTransfer.getData("text");
+        var altText = event.dataTransfer.getData("alt");
+
+        var wrapper = document.createElement('div');
+        wrapper.className = 'image-wrapper';
+
+        var img = new Image();
+        img.src = data;
+        img.alt = altText;
+        img.style.maxWidth = "150px";
+        img.style.maxHeight = "150px";
+        img.style.margin = "5px";
+        img.style.cursor = "pointer";
+
+        wrapper.appendChild(img);
+
+        document.getElementById('drop-container').appendChild(wrapper);
+        img.onclick = function() {
+            toggleSelection(img, 'drop-container');
+        };
+    }
+
+    function toggleSelection(img, container) {
+        if (currentImage) {
+            currentImage.classList.remove('selected');
+        }
+        currentImage = img;
+        currentContainer = container;
+        currentImage.classList.add('selected');
+        displayProperties(currentImage.alt, currentContainer);
+        
+    }
+    function getResourceCost(img) {
+        var resourceId = img.alt;
+        var xhr = new XMLHttpRequest();
+        var url = '/get_resource_cost?resource_id=' + encodeURIComponent(resourceId);
+        xhr.open('GET', url, true);
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState == 4 && xhr.status == 200) {
+                var cost = xhr.responseText;
+                
+                alert('Cost: ' + cost);
+            }
+        };
+        xhr.send();
+    }
+    
+
+    function displayProperties(selected_id, div_id) {
+        var xhr = new XMLHttpRequest();
+        var url = '/get_properties?selected_id=' + encodeURIComponent(selected_id) + '&div_id=' + encodeURIComponent(div_id);
+        xhr.open('GET', url, true);
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState == 4 && xhr.status == 200) {
+                var properties = JSON.parse(xhr.responseText);
+                var propertiesDiv = document.getElementById('image-properties');
+                propertiesDiv.innerHTML = ''; // Clear previous properties
+                properties.forEach(function(prop) {
+                    
+                    let label = document.createElement('label');
+                    label.textContent = prop.prop_name;
+                    propertiesDiv.appendChild(label);
+
+                    let inputElement;
+                    switch(prop.prop_input_type) {
+                        case 'textbox':
+                            inputElement = document.createElement('input');
+                            inputElement.type = 'text';
+                            inputElement.name = prop.prop_name;
+                            inputElement.required = prop.is_mandatory == "yes";
+                            inputElement.value = prop.prop_value || '';
+                            break;
+                        case 'dropdown':
+                            inputElement = document.createElement('select');
+                            inputElement.name = prop.prop_name;
+                            inputElement.required = prop.is_mandatory == "yes";
+                            let option = document.createElement('option');
+                            option.value = prop.prop_value;
+                            option.textContent = prop.prop_value;
+                            inputElement.appendChild(option);
+                            break;
+                        case 'checkbox':
+                            inputElement = document.createElement('input');
+                            inputElement.type = 'checkbox';
+                            inputElement.name = prop.prop_name;
+                            inputElement.required = prop.is_mandatory == "yes";
+                            inputElement.checked = prop.prop_value == 'yes';
+                            break;
+                        case 'radio':
+                            inputElement = document.createElement('input');
+                            inputElement.type = 'radio';
+                            inputElement.name = prop.prop_name;
+                            inputElement.value = prop.prop_value;
+                            inputElement.required = prop.is_mandatory == "yes";
+                            inputElement.checked = prop.prop_value == 'yes';
+                            break;
+                        default:
+                            inputElement = document.createElement('input');
+                            inputElement.type = 'text';
+                            inputElement.name = prop.prop_name;
+                            inputElement.value = prop.prop_value || '';
+                            inputElement.required = prop.is_mandatory == "yes";
+                    }
+                    propertiesDiv.appendChild(inputElement);
+                    
+                });
+                propertiesDiv.setAttribute('res_id', selected_id);
+                document.getElementById('properties-container').style.display = 'block';
+            }
+        };
+        xhr.send();
+    }
+
+    function saveProperties(event) {
+    event.preventDefault();
+    console.log('saveProperties function called');
+
+    var form = document.getElementById('properties-form');
+    var formData = new FormData(form);
+
+    var propValues = [];
+    formData.forEach((value, key) => {
+        propValues.push({ prop_name: key, prop_value: value });
+    });
+
+    var xhr = new XMLHttpRequest();
+    
+    xhr.open('POST', '/save_properties', true);
+    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest'); // Useful for CSRF protection in some frameworks
+    xhr.setRequestHeader('Content-Type', 'application/json');
+   
+
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState == 4 && xhr.status == 200) {
+            alert('Properties saved successfully');
+        }
+    };
+
+    xhr.send(JSON.stringify(propValues));
+}
+
+
+
+</script>
+
+</body>
+</html>
