@@ -129,6 +129,7 @@
 <div class="container container-4" id="properties-container">
     <form id="properties-form" onsubmit="saveProperties(event)">
         <div id="image-properties"></div>
+        <button type="button" onclick="editProperties()">Edit</button>
         <button type="submit">Save Properties</button>
     </form>
 </div>
@@ -184,71 +185,112 @@
         displayProperties(currentImage.alt, currentContainer);
     }
 
-    function displayProperties(selected_id, div_id) {
-        var xhr = new XMLHttpRequest();
-        var url = '/get_properties?selected_id=' + encodeURIComponent(selected_id) + '&div_id=' + encodeURIComponent(div_id);
-        xhr.open('GET', url, true);
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState == 4 && xhr.status == 200) {
-                var properties = JSON.parse(xhr.responseText);//doubt
-                var propertiesDiv = document.getElementById('image-properties');
-                propertiesDiv.innerHTML = ''; // Clear previous properties
-                properties.forEach(function(prop) {
-                    
-                    let label = document.createElement('label');
-                    label.textContent = prop.prop_name;
-                    propertiesDiv.appendChild(label);
 
-                    let inputElement;
-                    switch(prop.prop_input_type) {
-                        case 'textbox':
-                            inputElement = document.createElement('input');
-                            inputElement.type = 'text';
-                            inputElement.name = prop.prop_name;
-                            inputElement.required = prop.is_mandatory == "yes";
-                            inputElement.value = prop.prop_value || '';
-                            break;
-                        case 'dropdown':
-                            inputElement = document.createElement('select');
-                            inputElement.name = prop.prop_name;
-                            inputElement.required = prop.is_mandatory == "yes";
-                            let option = document.createElement('option');
-                            option.value = prop.prop_value;
-                            option.textContent = prop.prop_value;
-                            inputElement.appendChild(option);
-                            break;
-                        case 'checkbox':
-                            inputElement = document.createElement('input');
-                            inputElement.type = 'checkbox';
-                            inputElement.name = prop.prop_name;
-                            inputElement.required = prop.is_mandatory == "yes";
-                            inputElement.checked = prop.prop_value == 'yes';
-                            break;
-                        case 'radio':
-                            inputElement = document.createElement('input');
-                            inputElement.type = 'radio';
-                            inputElement.name = prop.prop_name;
-                            inputElement.value = prop.prop_value;
-                            inputElement.required = prop.is_mandatory == "yes";
-                            inputElement.checked = prop.prop_value == 'yes';
-                            break;
-                        default:
-                            inputElement = document.createElement('input');
-                            inputElement.type = 'text';
-                            inputElement.name = prop.prop_name;
-                            inputElement.value = prop.prop_value || '';
-                            inputElement.required = prop.is_mandatory == "yes";
-                    }
-                    propertiesDiv.appendChild(inputElement);
-                    
-                });
-                propertiesDiv.setAttribute('res_id',
-                 selected_id);
-                document.getElementById('properties-container').style.display = 'block';
-            }
-        };
-        xhr.send();
-    }
+    function displayProperties(selected_id, div_id) {
+    var xhr = new XMLHttpRequest();
+    var url = '/get_properties?selected_id=' + encodeURIComponent(selected_id) + '&div_id=' + encodeURIComponent(div_id);
+    xhr.open('GET', url, true);
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState == 4 && xhr.status == 200) {
+            var properties = JSON.parse(xhr.responseText);
+            var propertiesDiv = document.getElementById('image-properties');
+            propertiesDiv.innerHTML = ''; // Clear previous properties
+            properties.forEach(function(prop) {
+                let propertyItem = document.createElement('div');
+                propertyItem.className = 'property-item';
+                
+                let label = document.createElement('label');
+                label.textContent = prop.prop_name;
+                propertyItem.appendChild(label);
+
+                let inputElement;
+                switch(prop.prop_input_type) {
+                    case 'textbox':
+                        inputElement = document.createElement('input');
+                        inputElement.type = 'text';
+                        inputElement.name = prop.prop_name;
+                        inputElement.value = prop.prop_value || '';
+                        break;
+                    case 'dropdown':
+                        inputElement = document.createElement('select');
+                        inputElement.name = prop.prop_name;
+                        inputElement.setAttribute('data-options', JSON.stringify(prop.options));
+                        inputElement.disabled = true; // Disable dropdown initially
+
+                        // Add the initial option
+                        let initialOption = document.createElement('option');
+                        initialOption.value = prop.prop_value;
+                        initialOption.textContent = prop.prop_value;
+                        initialOption.selected = true;
+                        inputElement.appendChild(initialOption);
+                        break;
+                    case 'checkbox':
+                        inputElement = document.createElement('input');
+                        inputElement.type = 'checkbox';
+                        inputElement.name = prop.prop_name;
+                        inputElement.checked = prop.prop_value == 'yes';
+                        break;
+                    case 'radio':
+                        inputElement = document.createElement('input');
+                        inputElement.type = 'radio';
+                        inputElement.name = prop.prop_name;
+                        inputElement.value = prop.prop_value;
+                        inputElement.checked = prop.prop_value == 'yes';
+                        break;
+                    default:
+                        inputElement = document.createElement('input');
+                        inputElement.type = 'text';
+                        inputElement.name = prop.prop_name;
+                        inputElement.value = prop.prop_value || '';
+                }
+                inputElement.required = prop.is_mandatory == "yes";
+                propertyItem.appendChild(inputElement);
+                propertiesDiv.appendChild(propertyItem);
+            });
+            propertiesDiv.setAttribute('res_id', selected_id);
+            document.getElementById('properties-container').style.display = 'block';
+        }
+    };
+    xhr.send();
+}
+
+function editProperties() {
+    var propertiesDiv = document.getElementById('image-properties');
+    var selectElements = propertiesDiv.querySelectorAll('select');
+    
+    selectElements.forEach(function(select) {
+        if (select.hasAttribute('data-options')) {
+            let options = JSON.parse(select.getAttribute('data-options'));
+            let currentValue = select.value; // Save the current value
+            
+            // Create a set of existing options to avoid duplicates
+            let existingOptions = new Set();
+            
+            // Add current options to the set
+            Array.from(select.options).forEach(function(option) {
+                existingOptions.add(option.value);
+            });
+
+            // Add new options only if they are not duplicates
+            options.forEach(function(optionValue) {
+                if (!existingOptions.has(optionValue)) {
+                    let option = document.createElement('option');
+                    option.value = optionValue;
+                    option.textContent = optionValue;
+                    select.appendChild(option);
+                    existingOptions.add(optionValue); // Add the new option to the set
+                }
+            });
+            
+            // Restore the current value to ensure it's still selected
+            select.value = currentValue;
+        }
+        select.disabled = false; // Enable dropdown for editing
+    });
+}
+
+
+
 
 
     
@@ -337,3 +379,11 @@
 
 </body>
 </html>
+
+
+
+
+
+
+
+

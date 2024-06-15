@@ -61,16 +61,15 @@ def get_properties():
         # Get connection from connection pool
         cnx = cnxpool.get_connection()
         cursor = cnx.cursor(dictionary=True)
-        # Perform database operations here
         
         res_unique_id = request.args.get('selected_id')
         div_id = request.args.get('div_id')
-        print(div_id)
+        
         
         query = f"""
-          SELECT prop_name, prop_input_type, is_mandatory 
-          FROM resource_prop 
-          WHERE res_id = '{res_unique_id}'
+            SELECT prop_name, prop_input_type, is_mandatory 
+            FROM resource_prop 
+            WHERE res_id = '{res_unique_id}'
         """
         if div_id == "load-container":
             query = f"""
@@ -79,14 +78,24 @@ def get_properties():
                 JOIN resource_prop rp ON tpl.prop_id = rp.res_prop_id
                 WHERE tpl.res_unique_id = '{res_unique_id}'
             """
-        print("----------------test10----------")
-        print(query)
         
         cursor.execute(query)
         props = cursor.fetchall()
+        
+        
+            # Add possible options for dropdowns
+        for prop in props:
+            if prop['prop_input_type'] == 'dropdown':
+                if prop['prop_name'] == 'colour':
+                    prop['options'] = ['Red', 'Green', 'Blue', 'Yellow', 'Black', 'White']
+                elif prop['prop_name'] == 'manufacture':
+                        prop['options'] = ['hyundai','maruthi','suzuki']
+
+                    # Add more conditions for other dropdowns if needed
+
         return jsonify(props)
     except mysql.connector.Error as err:
-        return str(err)
+        return str(err), 500
     finally:
         if cursor:
             cursor.close()
@@ -210,6 +219,7 @@ def get_resource_cost():
             cursor.close()
         if cnx:
             cnx.close()
+
 
 if __name__ == '__main__':
     app.run(debug=True)
