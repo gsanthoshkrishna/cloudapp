@@ -43,7 +43,7 @@ def index():
         cursor.execute(query)
         load_images = cursor.fetchall()
         
-        return render_template('appg1.html', resources=resources, load_images=load_images)
+        return render_template('task24.html', resources=resources, load_images=load_images)
     except mysql.connector.Error as err:
         return str(err)
     finally:
