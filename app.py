@@ -214,9 +214,37 @@ def get_resource_cost():
 
 @app.route('/get_properties_options', methods=['GET'])
 def get_properties_options():    
-    reslistvalues = "[{'res_unique_id': 'bus1', 'prop_id': 2, 'list_value': 'red'}, {'res_unique_id': 'bus1', 'prop_id': 2, 'list_value': 'blue'}, {'res_unique_id': 'bus1', 'prop_id': 2, 'list_value': 'yellow'}, {'res_unique_id': 'bus1', 'prop_id': 3, 'list_value': '4'}, {'res_unique_id': 'bus1', 'prop_id': 3, 'list_value': '6'}, {'res_unique_id': 'bus1', 'prop_id': 3, 'list_value': '8'}, {'res_unique_id': 'bus1', 'prop_id': 4, 'list_value': 'volvo'}, {'res_unique_id': 'bus1', 'prop_id': 4, 'list_value': 'hyundai'}, {'res_unique_id': 'bus1', 'prop_id': 4, 'list_value': 'tata'}, {'res_unique_id': 'bus1', 'prop_id': 5, 'list_value': None}]"    
-    return jsonify(reslistvalues)
-               
+    cnx = None
+    cursor = None
+  
+    try:
+        cnx = cnxpool.get_connection()
+        cursor = cnx.cursor()
+        res_unique_id = request.args.get('res_unique_id')
+        print(res_unique_id)
+        print("......test qry.......")
+        query = "select tr_template_load.res_unique_id ,tr_template_load.prop_id, res_prop_list_value.list_value from tr_template_load left join res_prop_list_value on tr_template_load.prop_id = res_prop_list_value.res_prop_id where tr_template_load.res_unique_id ='" + str(res_unique_id) + "'order by tr_template_load.res_unique_id ;"
+        cursor.execute(query)
+        reslistvalues = cursor.fetchall()
+        print(reslistvalues)
+        return reslistvalues
+
+        if realistvalues:
+            return jsonify(reslistvalues)
+        else:
+            return jsonify({'error': 'Resource not found'}), 404
+    except mysql.connector.Error as err:
+        return jsonify({'error': str(err)}), 500
+    except Exception as ex:
+        return jsonify({'error': str(ex)}), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if cnx:
+            cnx.close()
+
+
+
 
  
 if __name__ == '__main__':

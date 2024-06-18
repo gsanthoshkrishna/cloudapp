@@ -27,12 +27,13 @@ cnxpool = pooling.MySQLConnectionPool(
 def propopt():
     cnx = cnxpool.get_connection()
     cursor = cnx.cursor(dictionary=True)
-    qry = "select tr_template_load.res_unique_id ,tr_template_load.prop_id, res_prop_list_value.list_value from tr_template_load left join res_prop_list_value on tr_template_load.prop_id = res_prop_list_value.res_prop_id where tr_template_load.res_unique_id ='bus1'order by tr_template_load.res_unique_id ;"
+    res_unique_id = 3
+    qry = "select tr_template_load.res_unique_id ,tr_template_load.prop_id, res_prop_list_value.list_value from tr_template_load left join res_prop_list_value on tr_template_load.prop_id = res_prop_list_value.res_prop_id where tr_template_load.res_unique_id ='" + str(res_unique_id) + "'order by tr_template_load.res_unique_id ;"
     print(qry)
     cursor.execute(qry)
     result = cursor.fetchall()
     print(result)
-    return(propopt)
+    return(result)
 
 propopt()
 
