@@ -1,19 +1,5 @@
 from flask import Flask, request, jsonify, render_template
-import json
-import mysql.connector
-from mysql.connector import pooling
 
-app = Flask(__name__)
-
-# Load MySQL configuration from config.json
-with open('config.json') as config_file:
-    config = json.load(config_file)['mysql']
-
-# Create connection pool
-cnxpool = pooling.MySQLConnectionPool(
-    pool_name="mypool",
-    pool_size=5,
-    **configfrom flask import Flask, request, jsonify, render_template
 import json
 import mysql.connector
 from mysql.connector import pooling
