@@ -213,41 +213,9 @@ def get_resource_cost():
 
 
 @app.route('/get_properties_options', methods=['GET'])
-def get_properties_options():
-
-    cnx = None
-    cursor = None
-  
-    try:
-        cnx = cnxpool.get_connection()
-        cursor = cnx.cursor()
-        res_prop_id = request.args.get('res_prop_id')
-        print(res_prop_id)
-        print("......test qry.......")
-        query = "select list_value from res_prop_list_value where res_prop_id= ' " + res_prop_id + "';"
-        cursor.execute(query)
-        reslistvalues = cursor.fetchall()
-        print(reslistvalues)
-        return reslistvalues
-
-        if realistvalues:
-            return jsonify(reslistvalues)
-        else:
-            return jsonify({'error': 'Resource not found'}), 404
-    except mysql.connector.Error as err:
-        return jsonify({'error': str(err)}), 500
-    except Exception as ex:
-        return jsonify({'error': str(ex)}), 500
-    finally:
-        if cursor:
-            cursor.close()
-        if cnx:
-            cnx.close()
-
-
-    
-    
-
+def get_properties_options():    
+    reslistvalues = "[{'res_unique_id': 'bus1', 'prop_id': 2, 'list_value': 'red'}, {'res_unique_id': 'bus1', 'prop_id': 2, 'list_value': 'blue'}, {'res_unique_id': 'bus1', 'prop_id': 2, 'list_value': 'yellow'}, {'res_unique_id': 'bus1', 'prop_id': 3, 'list_value': '4'}, {'res_unique_id': 'bus1', 'prop_id': 3, 'list_value': '6'}, {'res_unique_id': 'bus1', 'prop_id': 3, 'list_value': '8'}, {'res_unique_id': 'bus1', 'prop_id': 4, 'list_value': 'volvo'}, {'res_unique_id': 'bus1', 'prop_id': 4, 'list_value': 'hyundai'}, {'res_unique_id': 'bus1', 'prop_id': 4, 'list_value': 'tata'}, {'res_unique_id': 'bus1', 'prop_id': 5, 'list_value': None}]"    
+    return jsonify(reslistvalues)
                
 
  
