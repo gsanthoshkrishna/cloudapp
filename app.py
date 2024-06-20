@@ -74,7 +74,7 @@ def get_properties():
         """
         if div_id == "load-container":
             query = f"""
-                SELECT tpl.prop_name, tpl.prop_value, rp.prop_input_type, rp.is_mandatory
+                SELECT tpl.prop_name, tpl.prop_value, rp.prop_input_type, rp.is_mandatory,tpl.prop_id
                 FROM tr_template_load tpl
                 JOIN resource_prop rp ON tpl.prop_id = rp.res_prop_id
                 WHERE tpl.res_unique_id = '{res_unique_id}'
@@ -213,26 +213,36 @@ def get_resource_cost():
 
 
 @app.route('/get_properties_options', methods=['GET'])
-def get_properties_options():    
+def get_properties_options():
     cnx = None
     cursor = None
-  
+    
     try:
-        cnx = cnxpool.get_connection()
+        cnx = cnxpool.get_connection()  # Assuming you have a connection pool set up
         cursor = cnx.cursor()
-        res_unique_id = request.args.get('res_unique_id')
-        print(res_unique_id)
-        print("......test qry.......")
-        query = "select tr_template_load.res_unique_id ,tr_template_load.prop_id, res_prop_list_value.list_value from tr_template_load left join res_prop_list_value on tr_template_load.prop_id = res_prop_list_value.res_prop_id where tr_template_load.res_unique_id ='" + str(res_unique_id) + "'order by tr_template_load.res_unique_id ;"
-        cursor.execute(query)
-        reslistvalues = cursor.fetchall()
-        print(reslistvalues)
-        return reslistvalues
 
-        if realistvalues:
-            return jsonify(reslistvalues)
-        else:
-            return jsonify({'error': 'Resource not found'}), 404
+        res_unique_id = request.args.get('res_unique_id')
+        query = """
+            SELECT tr_template_load.prop_id, GROUP_CONCAT(res_prop_list_value.list_value ORDER BY res_prop_list_value.list_value) as list_values
+            FROM tr_template_load
+            LEFT JOIN res_prop_list_value ON tr_template_load.prop_id = res_prop_list_value.res_prop_id
+            WHERE tr_template_load.res_unique_id = %s
+            GROUP BY tr_template_load.prop_id
+            ORDER BY tr_template_load.prop_id;
+        """
+
+        cursor.execute(query, (res_unique_id,))
+        result = cursor.fetchall()
+
+        # Create a dictionary to hold prop_id -> list_values mapping
+        reslistvalues = {}
+        for row in result:
+            prop_id, list_values = row
+            list_values = list_values.split(',') if list_values else []
+            reslistvalues[prop_id] = list_values
+
+        return jsonify(reslistvalues)
+
     except mysql.connector.Error as err:
         return jsonify({'error': str(err)}), 500
     except Exception as ex:
@@ -249,5 +259,3 @@ def get_properties_options():
  
 if __name__ == '__main__':
     app.run(debug=True)
-
-

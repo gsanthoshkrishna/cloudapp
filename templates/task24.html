@@ -5,80 +5,85 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Drag and Drop Images with Persistent Properties Display</title>
     <style>
-        
-        #image-container,
-        #drop-container,
-        #load-container {
+        /* Styles remain unchanged */
+        #image-container, #drop-container, #load-container {
             border: 1px solid rgb(6, 0, 0);
             box-sizing: border-box;
             float: left;
-            height: 700px; /* Increased height */
+            height: 700px;
             min-height: 100px;
             display: flex;
             flex-direction: column;
             align-items: center;
             width: 25%;
-            
         }
-
         .image-wrapper {
             position: relative;
             display: inline-block;
         }
-
         img {
             max-width: 150px;
             max-height: 150px;
             margin: 5px;
             cursor: pointer;
-            border: 2px solid transparent; /* Add default border */
+            border: 2px solid transparent;
             transition: border 0.3s;
         }
-
         .selected {
             border: 2px solid blue;
         }
-
         #properties-container {
             display: none;
             border: 1px solid rgb(6, 0, 0);
             box-sizing: border-box;
             float: left;
-            height: 700px; /* Increased height */
+            height: 700px;
             min-height: 100px;
-            text-align: center;
+            text-align: left;
+            padding: 10px;
+            width: 25%;
+            overflow-y: auto;
         }
         .container {
-           border: 1px solid black;
-           box-sizing: border-box;
-           float: left;
-           height: 700px; /* Increased height */
+            border: 1px solid black;
+            box-sizing: border-box;
+            float: left;
+            height: 700px;
         }
-
         .container-1 {
             width: 25%;
-            background-color: #FADBD8; /* Light red */
+            background-color: #FADBD8;
         }
-
         .container-2 {
             width: 25%;
-            background-color: #D1F2EB; /* Light green */
+            background-color: #D1F2EB;
         }
-
         .container-3 {
             width: 25%;
-            background-color: #FCF3CF; /* Light yellow */
+            background-color: #FCF3CF;
         }
         .container-4 {
             width: 25%;
-            background-color: #a4d8bd; /* Light blue */
+            background-color: #a4d8bd;
         }
         #image-properties {
             display: flex;
             flex-direction: column;
-            align-items: center;
+            align-items: left;
         }
-
+        .property-item {
+            display: flex;
+            align-items: left;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+        .property-item label {
+            width: 150px;
+            margin-right: 10px;
+        }
+        .property-item input, .property-item select {
+            flex: 1;
+        }
     </style>
 </head>
 <body>
@@ -95,16 +100,30 @@
 
 <div class="container container-3" id="load-container">
     {% for image in load_images %}
-        <img src="/static/{{ image.res_image }}" alt="{{ image.res_unique_id }}" onclick="toggleSelection(this)">
+        <div class="image-wrapper">
+            <img src="/static/{{ image.res_image }}" alt="{{ image.res_unique_id }}" 
+                 onmouseover="getResourceCost(this)" 
+                 onmouseout="hideTooltip()"
+                 onclick="toggleSelection(this, 'load-container'); getPropertiesOptions(event);">
+        </div>
     {% endfor %}
 </div>
 
 <div class="container container-4" id="properties-container">
-    <div id="image-properties"></div>
+    <form id="properties-form" onsubmit="saveProperties(event)">
+        <div id="image-properties"></div>
+        <select id = "dropdownid"></select>
+        <button type="submit">Save Properties</button>
+        <button type="button" onclick="getPropertiesOptions(event)">Edit</button>
+    </form>
+    
 </div>
+
+<div id="tooltip" style="display:none; position: absolute; background-color: white; border: 1px solid black; padding: 5px;"></div>
 
 <script>
     let currentImage = null;
+    let currentContainer = null;
 
     function allowDrop(event) {
         event.preventDefault();
@@ -117,77 +136,277 @@
 
     function drop(event) {
         event.preventDefault();
-        var data = event.dataTransfer.getData("text");
-        var altText = event.dataTransfer.getData("alt");
+        const data = event.dataTransfer.getData("text");
+        const altText = event.dataTransfer.getData("alt");
 
-        var wrapper = document.createElement('div');
+        const wrapper = document.createElement('div');
         wrapper.className = 'image-wrapper';
 
-        var img = new Image();
+        const img = new Image();
         img.src = data;
         img.alt = altText;
         img.style.maxWidth = "150px";
         img.style.maxHeight = "150px";
         img.style.margin = "5px";
         img.style.cursor = "pointer";
-        
-        wrapper.appendChild(img);
 
+        wrapper.appendChild(img);
         document.getElementById('drop-container').appendChild(wrapper);
+
         img.onclick = function() {
-            toggleSelection(img);
+            toggleSelection(img, 'drop-container');
         };
     }
 
-    function toggleSelection(img) {
+    function toggleSelection(img, container) {
         if (currentImage) {
             currentImage.classList.remove('selected');
         }
         currentImage = img;
+        currentContainer = container;
         currentImage.classList.add('selected');
-        displayProperties(currentImage.alt,img.parentElement.id);
+        displayProperties(currentImage.alt, currentContainer);
     }
 
-    function displayProperties(selected_id,div_id) {
-        console.log(div_id);
+    function displayProperties(selected_id, div_id) {
         var xhr = new XMLHttpRequest();
         var url = '/get_properties?selected_id=' + encodeURIComponent(selected_id) + '&div_id=' + encodeURIComponent(div_id);
         xhr.open('GET', url, true);
         xhr.onreadystatechange = function() {
             if (xhr.readyState == 4 && xhr.status == 200) {
-                var properties = JSON.parse(xhr.responseText);
+                var properties = JSON.parse(xhr.responseText);//doubt
                 var propertiesDiv = document.getElementById('image-properties');
                 propertiesDiv.innerHTML = ''; // Clear previous properties
                 properties.forEach(function(prop) {
-                    let propDiv = document.createElement('div');
+                    
+                    let label = document.createElement('label');
+                    label.textContent = prop.prop_name;
+                    propertiesDiv.appendChild(label);
+
                     let inputElement;
+                    console.log("printing properties");
+                    console.log(prop);
+
                     switch(prop.prop_input_type) {
                         case 'textbox':
-                            inputElement = `<input type="text" name="${prop.prop_name}" ${prop.is_mandatory == "yes" ? "required" : ""} value="${prop.prop_value}">`;
+                            inputElement = document.createElement('input');
+                            inputElement.type = 'text';
+                            inputElement.id  = 'prop_' + prop.prop_id;
 
-
+                            inputElement.name = prop.prop_name;
+                            inputElement.required = prop.is_mandatory == "yes";
+                            inputElement.value = prop.prop_value || '';
                             break;
                         case 'dropdown':
-                            inputElement = `<select name="${prop.prop_name}" ${prop.is_mandatory == "yes" ? "required" : ""}><option value="">${prop.prop_value}</option></select>`;
+                            inputElement = document.createElement('select');
+                            inputElement.name = prop.prop_name;
+                            inputElement.id  = 'prop_' + prop.prop_id;
+
+                            inputElement.required = prop.is_mandatory == "yes";
+                            let option = document.createElement('option');
+                            option.value = prop.prop_value;
+                            option.textContent = prop.prop_value;
+                            inputElement.appendChild(option);
                             break;
                         case 'checkbox':
-                            inputElement = `<input type="checkbox" name="${prop.prop_name}" ${prop.is_mandatory == "yes" ? "required" : ""} ${prop.prop_value == 'yes' ? 'checked' : ''}>`;
+                            inputElement = document.createElement('input');
+                            inputElement.type = 'checkbox';
+                            inputElement.name = prop.prop_name;
+                            inputElement.id  = 'prop_' + prop.prop_id;
+                            inputElement.required = prop.is_mandatory == "yes";
+                            inputElement.checked = prop.prop_value == 'yes';
                             break;
                         case 'radio':
-                        inputElement = `<input type="radio" name="${prop.prop_name}" value="${prop.prop_value}" ${prop.is_mandatory == 'yes' ? 'required' : ''} ${prop.prop_value == 'yes' ? 'checked' : ''}>`;
-                        break;
+                            inputElement = document.createElement('input');
+                            inputElement.type = 'radio';
+                            inputElement.name = prop.prop_name;
+                            inputElement.id  = 'prop_' + prop.prop_id;
+                            inputElement.value = prop.prop_value;
+                            inputElement.required = prop.is_mandatory == "yes";
+                            inputElement.checked = prop.prop_value == 'yes';
+                            break;
                         default:
-                            inputElement = `<input type="text" name="${prop.prop_name}" value="${prop.prop_value}" ${prop.is_mandatory == "yes" ? "required" : ""} >`;
+                            inputElement = document.createElement('input');
+                            inputElement.type = 'text';
+                            inputElement.name = prop.prop_name;
+                            inputElement.id  = 'prop_' + prop.prop_id;
+                            inputElement.value = prop.prop_value || '';
+                            inputElement.required = prop.is_mandatory == "yes";
                     }
-                    propDiv.innerHTML = `<strong>${prop.prop_name}:</strong> ${inputElement}`;
-                    propertiesDiv.appendChild(propDiv);
+                    propertiesDiv.appendChild(inputElement);
                     
                 });
+                propertiesDiv.setAttribute('res_id',
+                 selected_id);
                 document.getElementById('properties-container').style.display = 'block';
             }
         };
         xhr.send();
     }
+
+    function saveProperties(event) {
+        event.preventDefault();
+        const form = document.getElementById('properties-form');
+        const formData = new FormData(form);
+
+        const propValues = [];
+        formData.forEach((value, key) => {
+            propValues.push({ prop_name: key, prop_value: value });
+        });
+
+        
+        const propertiesDiv = document.getElementById('image-properties');
+        const res_id = propertiesDiv.getAttribute('res_id');
+        const dataToSend = {
+            res_id: res_id,
+            properties: propValues
+        };
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', '/save_properties', true);
+        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                alert('Properties saved successfully');
+            } else if (xhr.readyState === 4) {
+                console.error('Error saving properties:', xhr.statusText);
+            }
+        };
+        xhr.onerror = function() {
+            console.error('Network error while saving properties.');
+        };
+        xhr.send(JSON.stringify(dataToSend));
+    }
+
+    function getResourceCost(img) {
+        const res_id = img.alt;
+        const xhr = new XMLHttpRequest();
+        const url = `/get_resource_cost?res_id=${encodeURIComponent(res_id)}`;
+
+        xhr.open('GET', url, true);
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                const response = JSON.parse(xhr.responseText);
+                if (response.cost) {
+                    showTooltip(img, 'Cost: ' + response.cost);
+                }
+            } 
+        };
+        
+        xhr.send();
+    }
+
+    function showTooltip(img, text) {
+        const tooltip = document.getElementById('tooltip');
+        tooltip.innerHTML = text;
+        tooltip.style.display = 'block';
+        tooltip.style.left = img.getBoundingClientRect().left + window.scrollX + 'px';
+        tooltip.style.top = img.getBoundingClientRect().top + window.scrollY - tooltip.offsetHeight + 'px';
+    }
+
+    function hideTooltip() {
+        const tooltip = document.getElementById('tooltip');
+        tooltip.style.display = 'none';
+    }
+
+    document.addEventListener('mousemove', function(event) {
+        const tooltip = document.getElementById('tooltip');
+        if (tooltip.style.display === 'block') {
+            tooltip.style.left = event.pageX + 'px';
+            tooltip.style.top = event.pageY - tooltip.offsetHeight + 'px';
+        }
+    });
+
+    document.addEventListener('mouseout', function(event) {
+        const tooltip = document.getElementById('tooltip');
+        if (!event.relatedTarget || !event.relatedTarget.closest('.container-1 img')) {
+            tooltip.style.display = 'none';
+        }
+    });
+
+    function getPropertiesOptions(event) {
+        event.preventDefault();
+
+        const propertiesDiv = document.getElementById('image-properties');
+        const resUniqueId = propertiesDiv.getAttribute('res_id');
+
+        console.log("Res Unique ID:", resUniqueId);
+
+        const xhr = new XMLHttpRequest();
+        const url = `/get_properties_options?res_unique_id=${encodeURIComponent(resUniqueId)}`;
+
+        xhr.open('GET', url, true);
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                    const reslistvalues = JSON.parse(xhr.responseText);
+                    console.log(reslistvalues);
+
+                    Object.keys(reslistvalues).forEach(function(prop_id) {
+                        const options = reslistvalues[prop_id];
+                        console.log("Processing prop:", prop_id, options);
+                        
+                        
+
+
+                        // Construct the element ID using prop_id
+                        const propElementId = 'prop_' + prop_id; // prop_id as key
+                        const propElement = document.getElementById(propElementId);
+                        let propElementvalue = propElement.value
+                        console.log("Element with ID '" + propElementId + "':", propElement);
+                        let actul_value = propElement;
+                        console.log("actul_value",propElementvalue);
+
+                        if (propElement) {
+                            if (propElement.tagName === 'SELECT') {
+                                propElement.innerHTML = '';
+                            
+
+                                // Add new options
+                                options.forEach(function(optionValue) {
+                                    let option = document.createElement('option');
+                                    option.value = optionValue;
+                                    option.textContent = optionValue;
+                                    
+                                    propElement.appendChild(option);
+                                });
+                            // Reapply the saved current value if it still exists in the updated options
+                            
+
+                                    
+                            } else {
+                                console.error('Element with ID ' + propElementId + ' is not a SELECT element.');
+                            }
+                        } else {
+                            console.error('Element with ID ' + propElementId + ' not found.');
+                        }
+                        
+                    });
+                } else {
+                    console.error('Error fetching properties options:', xhr.statusText);
+                }
+            }
+        };
+        xhr.onerror = function() {
+            console.error('Network error while fetching properties options.');
+        };
+        xhr.send();
+        }
+
+
+
+    
+
+
+
+
+
+
+
+
+
 </script>
 
 </body>
