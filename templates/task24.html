@@ -342,11 +342,13 @@
             if (xhr.readyState === 4) {
                 if (xhr.status === 200) {
                     const reslistvalues = JSON.parse(xhr.responseText);
+                    console.log("return values");
                     console.log(reslistvalues);
 
-                    Object.keys(reslistvalues).forEach(function(prop_id) {
-                        const options = reslistvalues[prop_id];
-                        console.log("Processing prop:", prop_id, options);
+                    reslistvalues.forEach(function(list_value) {
+                        const prop_id = list_value[1]
+                        console.log("Processing prop:", prop_id);
+                        console.log(list_value[2]);
                         
                         
 
@@ -354,6 +356,9 @@
                         // Construct the element ID using prop_id
                         const propElementId = 'prop_' + prop_id; // prop_id as key
                         const propElement = document.getElementById(propElementId);
+                        console.log("printing propelement");
+                        console.log(propElement);
+                        
                         let propElementvalue = propElement.value
                         console.log("Element with ID '" + propElementId + "':", propElement);
                         let actul_value = propElement;
@@ -361,17 +366,24 @@
 
                         if (propElement) {
                             if (propElement.tagName === 'SELECT') {
-                                propElement.innerHTML = '';
+                                
                             
 
                                 // Add new options
-                                options.forEach(function(optionValue) {
+                                
                                     let option = document.createElement('option');
-                                    option.value = optionValue;
-                                    option.textContent = optionValue;
+                                    option.value =list_value[2];
+                                    option.textContent =list_value[2];
+                                    if (actul_value == list_value[2]){
+                                        option.selected = true;
+                                    }
+                                       
                                     
                                     propElement.appendChild(option);
-                                });
+                                    console.log("propelement1...");
+                                    console.log(propElement);
+                                    
+                                
                             // Reapply the saved current value if it still exists in the updated options
                             
 
