@@ -208,6 +208,7 @@
                             option.textContent = prop.prop_value;
                             inputElement.appendChild(option);
                             break;
+                        
                         case 'checkbox':
                             inputElement = document.createElement('input');
                             inputElement.type = 'checkbox';
@@ -363,6 +364,7 @@
                                 let option = document.createElement('option');
                                 option.value = optionValue;
                                 option.textContent = optionValue;
+                                
                                 propElement.appendChild(option);
                             });
                         } else {
