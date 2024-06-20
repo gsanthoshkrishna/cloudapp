@@ -5,9 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Drag and Drop Images with Persistent Properties Display</title>
     <style>
-        #image-container,
-        #drop-container,
-        #load-container {
+        /* Styles remain unchanged */
+        #image-container, #drop-container, #load-container {
             border: 1px solid rgb(6, 0, 0);
             box-sizing: border-box;
             float: left;
@@ -18,12 +17,10 @@
             align-items: center;
             width: 25%;
         }
-
         .image-wrapper {
             position: relative;
             display: inline-block;
         }
-
         img {
             max-width: 150px;
             max-height: 150px;
@@ -32,11 +29,9 @@
             border: 2px solid transparent;
             transition: border 0.3s;
         }
-
         .selected {
             border: 2px solid blue;
         }
-
         #properties-container {
             display: none;
             border: 1px solid rgb(6, 0, 0);
@@ -49,54 +44,44 @@
             width: 25%;
             overflow-y: auto;
         }
-
         .container {
             border: 1px solid black;
             box-sizing: border-box;
             float: left;
             height: 700px;
         }
-
         .container-1 {
             width: 25%;
             background-color: #FADBD8;
         }
-
         .container-2 {
             width: 25%;
             background-color: #D1F2EB;
         }
-
         .container-3 {
             width: 25%;
             background-color: #FCF3CF;
         }
-
         .container-4 {
             width: 25%;
             background-color: #a4d8bd;
         }
-
         #image-properties {
             display: flex;
             flex-direction: column;
             align-items: left;
         }
-
         .property-item {
             display: flex;
             align-items: left;
             margin-bottom: 10px;
             width: 100%;
         }
-
         .property-item label {
             width: 150px;
             margin-right: 10px;
         }
-
-        .property-item input,
-        .property-item select {
+        .property-item input, .property-item select {
             flex: 1;
         }
     </style>
@@ -117,251 +102,217 @@
     {% for image in load_images %}
         <div class="image-wrapper">
             <img src="/static/{{ image.res_image }}" alt="{{ image.res_unique_id }}" 
-                 onmouseover="getResourceCost(this)" onmouseout="hideTooltip()"
-                 onclick="toggleSelection(this, 'load-container')">
-        </div><!--The this keyword is passed as the first argument, which refers to the HTML element that was clicked
-        The toggleSelection function takes two parameters: the button element (this) and a container ID ('load-container').
-   It finds the container element by its ID.-->
+                 onmouseover="getResourceCost(this)" 
+                 onmouseout="hideTooltip()"
+                 onclick="toggleSelection(this, 'load-container'); getPropertiesOptions(event);">
+        </div>
     {% endfor %}
 </div>
-
 
 <div class="container container-4" id="properties-container">
     <form id="properties-form" onsubmit="saveProperties(event)">
         <div id="image-properties"></div>
-        <button type="button" onclick="editProperties()">Edit</button>
+        
         <button type="submit">Save Properties</button>
+        <button type="button" onclick="getPropertiesOptions(event)">Edit</button>
     </form>
+    
 </div>
 
 <div id="tooltip" style="display:none; position: absolute; background-color: white; border: 1px solid black; padding: 5px;"></div>
 
 <script>
     let currentImage = null;
-    let currentContainer = null; // when you need to keep track of elements or values that might be assigned later
+    let currentContainer = null;
 
     function allowDrop(event) {
-        event.preventDefault(); // allow target element to accept drop actions.
+        event.preventDefault();
     }
 
     function drag(event) {
-        event.dataTransfer.setData("text", event.target.src); // event.target refers to the element that is being dragged. .src gets the value
+        event.dataTransfer.setData("text", event.target.src);
         event.dataTransfer.setData("alt", event.target.alt);
     }
 
     function drop(event) {
         event.preventDefault();
-        var data = event.dataTransfer.getData("text"); // Retrieves the src and alt data of the dragged image from the dataTransfer object
-        var altText = event.dataTransfer.getData("alt");
+        const data = event.dataTransfer.getData("text");
+        const altText = event.dataTransfer.getData("alt");
 
-        var wrapper = document.createElement('div');
-        wrapper.className = 'image-wrapper'; // Creates a new div element to act as a wrapper for the dropped image and assigns it a class for styling purposes.
+        const wrapper = document.createElement('div');
+        wrapper.className = 'image-wrapper';
 
-        var img = new Image();
+        const img = new Image();
         img.src = data;
         img.alt = altText;
         img.style.maxWidth = "150px";
-        img.style.maxHeight = "150px"; // style of the image in drop container
+        img.style.maxHeight = "150px";
         img.style.margin = "5px";
         img.style.cursor = "pointer";
 
         wrapper.appendChild(img);
+        document.getElementById('drop-container').appendChild(wrapper);
 
-        document.getElementById('drop-container').appendChild(wrapper); // This appends the wrapper element (which contains the image) as a child of the drop-container element
         img.onclick = function() {
-            toggleSelection(img, 'drop-container'); // select the image in drop container
+            toggleSelection(img, 'drop-container');
         };
     }
 
-    function toggleSelection(img, container) { // Checks if there is a currently selected image.
+    function toggleSelection(img, container) {
         if (currentImage) {
-            currentImage.classList.remove('selected'); // deselects the previously selected image
+            currentImage.classList.remove('selected');
         }
-        currentImage = img; // newly clicked image
-        currentContainer = container; // newly clicked container
-        currentImage.classList.add('selected'); // newly selected
-        console.log('Selected ID:', currentImage.alt); // Debug log
-        console.log('Container:', currentContainer); // Debug log
+        currentImage = img;
+        currentContainer = container;
+        currentImage.classList.add('selected');
         displayProperties(currentImage.alt, currentContainer);
     }
 
-
     function displayProperties(selected_id, div_id) {
-    var xhr = new XMLHttpRequest();
-    var url = '/get_properties?selected_id=' + encodeURIComponent(selected_id) + '&div_id=' + encodeURIComponent(div_id);
-    xhr.open('GET', url, true);
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState == 4 && xhr.status == 200) {
-            var properties = JSON.parse(xhr.responseText);
-            var propertiesDiv = document.getElementById('image-properties');
-            propertiesDiv.innerHTML = ''; // Clear previous properties
-            properties.forEach(function(prop) {
-                let propertyItem = document.createElement('div');
-                propertyItem.className = 'property-item';
-                
-                let label = document.createElement('label');
-                label.textContent = prop.prop_name;
-                propertyItem.appendChild(label);
-
-                let inputElement;
-                switch(prop.prop_input_type) {
-                    case 'textbox':
-                        inputElement = document.createElement('input');
-                        inputElement.type = 'text';
-                        inputElement.name = prop.prop_name;
-                        inputElement.value = prop.prop_value || '';
-                        break;
-                    case 'dropdown':
-                        inputElement = document.createElement('select');
-                        inputElement.name = prop.prop_name;
-                        inputElement.setAttribute('data-options', JSON.stringify(prop.options));
-                        inputElement.disabled = true; // Disable dropdown initially
-
-                        // Add the initial option
-                        let initialOption = document.createElement('option');
-                        initialOption.value = prop.prop_value;
-                        initialOption.textContent = prop.prop_value;
-                        initialOption.selected = true;
-                        inputElement.appendChild(initialOption);
-                        break;
-                    case 'checkbox':
-                        inputElement = document.createElement('input');
-                        inputElement.type = 'checkbox';
-                        inputElement.name = prop.prop_name;
-                        inputElement.checked = prop.prop_value == 'yes';
-                        break;
-                    case 'radio':
-                        inputElement = document.createElement('input');
-                        inputElement.type = 'radio';
-                        inputElement.name = prop.prop_name;
-                        inputElement.value = prop.prop_value;
-                        inputElement.checked = prop.prop_value == 'yes';
-                        break;
-                    default:
-                        inputElement = document.createElement('input');
-                        inputElement.type = 'text';
-                        inputElement.name = prop.prop_name;
-                        inputElement.value = prop.prop_value || '';
-                }
-                inputElement.required = prop.is_mandatory == "yes";
-                propertyItem.appendChild(inputElement);
-                propertiesDiv.appendChild(propertyItem);
-            });
-            propertiesDiv.setAttribute('res_id', selected_id);
-            document.getElementById('properties-container').style.display = 'block';
-        }
-    };
-    xhr.send();
-}
-
-function editProperties() {
-    var propertiesDiv = document.getElementById('image-properties');
-    var selectElements = propertiesDiv.querySelectorAll('select');
-    
-    selectElements.forEach(function(select) {
-        if (select.hasAttribute('data-options')) {
-            let options = JSON.parse(select.getAttribute('data-options'));
-            let currentValue = select.value; // Save the current value
-            
-            // Create a set of existing options to avoid duplicates
-            let existingOptions = new Set();
-            
-            // Add current options to the set
-            Array.from(select.options).forEach(function(option) {
-                existingOptions.add(option.value);
-            });
-
-            // Add new options only if they are not duplicates
-            options.forEach(function(optionValue) {
-                if (!existingOptions.has(optionValue)) {
-                    let option = document.createElement('option');
-                    option.value = optionValue;
-                    option.textContent = optionValue;
-                    select.appendChild(option);
-                    existingOptions.add(optionValue); // Add the new option to the set
-                }
-            });
-            
-            // Restore the current value to ensure it's still selected
-            select.value = currentValue;
-        }
-        select.disabled = false; // Enable dropdown for editing
-    });
-}
-
-
-
-
-
-    
-
-    function saveProperties(event) {
-        event.preventDefault();
-        console.log('saveProperties function called..');
-
-        var form = document.getElementById('properties-form');
-        var formData = new FormData(form);
-
-        var propValues = [];
-        formData.forEach((value, key) => {
-            propValues.push({ prop_name: key, prop_value: value });
-        });
-
-        var propertiesDiv = document.getElementById('image-properties');
-        var res_id = propertiesDiv.getAttribute('res_id');
-        
-        console.log(propValues);
-
-        var dataToSend = {
-            res_id: res_id,
-            properties: propValues
-        };
-        
         var xhr = new XMLHttpRequest();
-        xhr.open('POST', '/save_properties', true);
-        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest'); // Useful for CSRF protection in some frameworks
-        xhr.setRequestHeader('Content-Type', 'application/json');
-        
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState == 4 && xhr.status == 200) {
-                alert('Properties saved successfully');
-            }
-        };
-
-        xhr.send(JSON.stringify(dataToSend));
-    }
-    function getResourceCost(img) {
-        var res_id = img.alt;
-        var xhr = new XMLHttpRequest();
-        var url = '/get_resource_cost?res_id=' + encodeURIComponent(res_id);
-
+        var url = '/get_properties?selected_id=' + encodeURIComponent(selected_id) + '&div_id=' + encodeURIComponent(div_id);
         xhr.open('GET', url, true);
         xhr.onreadystatechange = function() {
             if (xhr.readyState == 4 && xhr.status == 200) {
-                var response = JSON.parse(xhr.responseText);
-                if (response.cost) {
-                    showTooltip(img, 'Cost: ' + response.cost);
-                }
+                var properties = JSON.parse(xhr.responseText);//doubt
+                var propertiesDiv = document.getElementById('image-properties');
+                propertiesDiv.innerHTML = ''; // Clear previous properties
+                properties.forEach(function(prop) {
+                    
+                    let label = document.createElement('label');
+                    label.textContent = prop.prop_name;
+                    propertiesDiv.appendChild(label);
+
+                    let inputElement;
+                    console.log("printing properties");
+                    console.log(prop);
+
+                    switch(prop.prop_input_type) {
+                        case 'textbox':
+                            inputElement = document.createElement('input');
+                            inputElement.type = 'text';
+                            inputElement.id  = 'prop_' + prop.prop_id;
+
+                            inputElement.name = prop.prop_name;
+                            inputElement.required = prop.is_mandatory == "yes";
+                            inputElement.value = prop.prop_value || '';
+                            break;
+                        case 'dropdown':
+                            inputElement = document.createElement('select');
+                            inputElement.name = prop.prop_name;
+                            inputElement.id  = 'prop_' + prop.prop_id;
+
+                            inputElement.required = prop.is_mandatory == "yes";
+                            let option = document.createElement('option');
+                            option.value = prop.prop_value;
+                            option.textContent = prop.prop_value;
+                            inputElement.appendChild(option);
+                            break;
+                        case 'checkbox':
+                            inputElement = document.createElement('input');
+                            inputElement.type = 'checkbox';
+                            inputElement.name = prop.prop_name;
+                            inputElement.id  = 'prop_' + prop.prop_id;
+                            inputElement.required = prop.is_mandatory == "yes";
+                            inputElement.checked = prop.prop_value == 'yes';
+                            break;
+                        case 'radio':
+                            inputElement = document.createElement('input');
+                            inputElement.type = 'radio';
+                            inputElement.name = prop.prop_name;
+                            inputElement.id  = 'prop_' + prop.prop_id;
+                            inputElement.value = prop.prop_value;
+                            inputElement.required = prop.is_mandatory == "yes";
+                            inputElement.checked = prop.prop_value == 'yes';
+                            break;
+                        default:
+                            inputElement = document.createElement('input');
+                            inputElement.type = 'text';
+                            inputElement.name = prop.prop_name;
+                            inputElement.id  = 'prop_' + prop.prop_id;
+                            inputElement.value = prop.prop_value || '';
+                            inputElement.required = prop.is_mandatory == "yes";
+                    }
+                    propertiesDiv.appendChild(inputElement);
+                    
+                });
+                propertiesDiv.setAttribute('res_id',
+                 selected_id);
+                document.getElementById('properties-container').style.display = 'block';
             }
         };
         xhr.send();
     }
 
+    function saveProperties(event) {
+        event.preventDefault();
+        const form = document.getElementById('properties-form');
+        const formData = new FormData(form);
+
+        const propValues = [];
+        formData.forEach((value, key) => {
+            propValues.push({ prop_name: key, prop_value: value });
+        });
+
+        
+        const propertiesDiv = document.getElementById('image-properties');
+        const res_id = propertiesDiv.getAttribute('res_id');
+        const dataToSend = {
+            res_id: res_id,
+            properties: propValues
+        };
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', '/save_properties', true);
+        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                alert('Properties saved successfully');
+            } else if (xhr.readyState === 4) {
+                console.error('Error saving properties:', xhr.statusText);
+            }
+        };
+        xhr.onerror = function() {
+            console.error('Network error while saving properties.');
+        };
+        xhr.send(JSON.stringify(dataToSend));
+    }
+
+    function getResourceCost(img) {
+        const res_id = img.alt;
+        const xhr = new XMLHttpRequest();
+        const url = `/get_resource_cost?res_id=${encodeURIComponent(res_id)}`;
+
+        xhr.open('GET', url, true);
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                const response = JSON.parse(xhr.responseText);
+                if (response.cost) {
+                    showTooltip(img, 'Cost: ' + response.cost);
+                }
+            } 
+        };
+        
+        xhr.send();
+    }
+
     function showTooltip(img, text) {
-        var tooltip = document.getElementById('tooltip');
+        const tooltip = document.getElementById('tooltip');
         tooltip.innerHTML = text;
         tooltip.style.display = 'block';
         tooltip.style.left = img.getBoundingClientRect().left + window.scrollX + 'px';
         tooltip.style.top = img.getBoundingClientRect().top + window.scrollY - tooltip.offsetHeight + 'px';
     }
-    function hideTooltip() {
-    var tooltip = document.getElementById('tooltip');
-    tooltip.style.display = 'none';
-   }
 
+    function hideTooltip() {
+        const tooltip = document.getElementById('tooltip');
+        tooltip.style.display = 'none';
+    }
 
     document.addEventListener('mousemove', function(event) {
-        var tooltip = document.getElementById('tooltip');
+        const tooltip = document.getElementById('tooltip');
         if (tooltip.style.display === 'block') {
             tooltip.style.left = event.pageX + 'px';
             tooltip.style.top = event.pageY - tooltip.offsetHeight + 'px';
@@ -369,21 +320,75 @@ function editProperties() {
     });
 
     document.addEventListener('mouseout', function(event) {
-        var tooltip = document.getElementById('tooltip');
+        const tooltip = document.getElementById('tooltip');
         if (!event.relatedTarget || !event.relatedTarget.closest('.container-1 img')) {
             tooltip.style.display = 'none';
         }
     });
-   
+
+    function getPropertiesOptions(event) {
+    event.preventDefault();
+
+    const propertiesDiv = document.getElementById('image-properties');
+    const resUniqueId = propertiesDiv.getAttribute('res_id');
+
+    console.log("Res Unique ID:", resUniqueId);
+
+    const xhr = new XMLHttpRequest();
+    const url = `/get_properties_options?res_unique_id=${encodeURIComponent(resUniqueId)}`;
+
+    xhr.open('GET', url, true);
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+                const reslistvalues = JSON.parse(xhr.responseText);
+                console.log(reslistvalues);
+
+                Object.keys(reslistvalues).forEach(function(prop_id) {
+                    const options = reslistvalues[prop_id];
+                    console.log("Processing prop:", prop_id, options);
+
+                    // Construct the element ID using prop_id
+                    const propElementId = 'prop_' + prop_id; // prop_id as key
+                    const propElement = document.getElementById(propElementId);
+                    console.log("Element with ID '" + propElementId + "':", propElement);
+
+                    if (propElement) {
+                        if (propElement.tagName === 'SELECT') {
+                            // Clear existing options
+                            propElement.innerHTML = '';
+
+                            // Add new options
+                            options.forEach(function(optionValue) {
+                                let option = document.createElement('option');
+                                option.value = optionValue;
+                                option.textContent = optionValue;
+                                propElement.appendChild(option);
+                            });
+                        } else {
+                            console.error('Element with ID ' + propElementId + ' is not a SELECT element.');
+                        }
+                    } else {
+                        console.error('Element with ID ' + propElementId + ' not found.');
+                    }
+                });
+            } else {
+                console.error('Error fetching properties options:', xhr.statusText);
+            }
+        }
+    };
+    xhr.onerror = function() {
+        console.error('Network error while fetching properties options.');
+    };
+    xhr.send();
+}
+
+
+
+
+
+
 </script>
 
 </body>
 </html>
-
-
-
-
-
-
-
-
