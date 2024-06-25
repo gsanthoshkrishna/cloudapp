@@ -200,7 +200,7 @@
                         case 'dropdown':
                             inputElement = document.createElement('select');
                             inputElement.name = prop.prop_name;
-                            inputElement.id  = 'prop_' + prop.prop_id;
+                            inputElement.id  =  'prop_' + prop.prop_id;
 
                             inputElement.required = prop.is_mandatory == "yes";
                             let option = document.createElement('option');
@@ -355,7 +355,10 @@
 
                         // Construct the element ID using prop_id
                         const propElementId = 'prop_' + prop_id; // prop_id as key
+                        console.log("printingpropElementId");
+                        console.log(propElementId);
                         const propElement = document.getElementById(propElementId);
+                        propElement.innerHTML = '';
                         console.log("printing propelement");
                         console.log(propElement);
                         
@@ -406,6 +409,7 @@
         };
         xhr.send();
         }
+
 
 
 
