@@ -104,7 +104,7 @@
             <img src="/static/{{ image.res_image }}" alt="{{ image.res_unique_id }}" 
                  onmouseover="getResourceCost(this)" 
                  onmouseout="hideTooltip()"
-                 onclick="toggleSelection(this, 'load-container'); getPropertiesOptions(event);">
+                 onclick="toggleSelection(this, 'load-container');">
         </div>
     {% endfor %}
 </div>
@@ -191,7 +191,7 @@
                         case 'textbox':
                             inputElement = document.createElement('input');
                             inputElement.type = 'text';
-                            inputElement.id  = 'prop_' + prop.prop_id;
+                            inputElement.id  = prop.prop_id;
 
                             inputElement.name = prop.prop_name;
                             inputElement.required = prop.is_mandatory == "yes";
@@ -200,7 +200,7 @@
                         case 'dropdown':
                             inputElement = document.createElement('select');
                             inputElement.name = prop.prop_name;
-                            inputElement.id  =  'prop_' + prop.prop_id;
+                            inputElement.id  =  prop.prop_id;
 
                             inputElement.required = prop.is_mandatory == "yes";
                             let option = document.createElement('option');
@@ -212,7 +212,7 @@
                             inputElement = document.createElement('input');
                             inputElement.type = 'checkbox';
                             inputElement.name = prop.prop_name;
-                            inputElement.id  = 'prop_' + prop.prop_id;
+                            inputElement.id  = prop.prop_id;
                             inputElement.required = prop.is_mandatory == "yes";
                             inputElement.checked = prop.prop_value == 'yes';
                             break;
@@ -220,7 +220,7 @@
                             inputElement = document.createElement('input');
                             inputElement.type = 'radio';
                             inputElement.name = prop.prop_name;
-                            inputElement.id  = 'prop_' + prop.prop_id;
+                            inputElement.id  = prop.prop_id;
                             inputElement.value = prop.prop_value;
                             inputElement.required = prop.is_mandatory == "yes";
                             inputElement.checked = prop.prop_value == 'yes';
@@ -229,11 +229,13 @@
                             inputElement = document.createElement('input');
                             inputElement.type = 'text';
                             inputElement.name = prop.prop_name;
-                            inputElement.id  = 'prop_' + prop.prop_id;
+                            inputElement.id  = prop.prop_id;
                             inputElement.value = prop.prop_value || '';
                             inputElement.required = prop.is_mandatory == "yes";
                     }
                     propertiesDiv.appendChild(inputElement);
+                    getPropertiesOptions(prop.prop_id);
+                     
                     
                 });
                 propertiesDiv.setAttribute('res_id',
@@ -325,90 +327,144 @@
             tooltip.style.display = 'none';
         }
     });
+    function getPropertiesOptions(prop_id) {
+      
 
-    function getPropertiesOptions(event) {
-        event.preventDefault();
-
-        const propertiesDiv = document.getElementById('image-properties');
-        const resUniqueId = propertiesDiv.getAttribute('res_id');
-
-        console.log("Res Unique ID:", resUniqueId);
-
-        const xhr = new XMLHttpRequest();
-        const url = `/get_properties_options?res_unique_id=${encodeURIComponent(resUniqueId)}`;
-
-        xhr.open('GET', url, true);
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState === 4) {
-                if (xhr.status === 200) {
-                    const reslistvalues = JSON.parse(xhr.responseText);
-                    console.log("return values");
-                    console.log(reslistvalues);
-
-                    reslistvalues.forEach(function(list_value) {
-                        const prop_id = list_value[1]
-                        console.log("Processing prop:", prop_id);
-                        console.log(list_value[2]);
-                        
-                        
+      const xhr = new XMLHttpRequest();
+      const url = `/get_properties_options?prop_id=${encodeURIComponent(prop_id)}`;
 
 
-                        // Construct the element ID using prop_id
-                        const propElementId = 'prop_' + prop_id; // prop_id as key
-                        console.log("printingpropElementId");
-                        console.log(propElementId);
-                        const propElement = document.getElementById(propElementId);
-                        propElement.innerHTML = '';
-                        console.log("printing propelement");
-                        console.log(propElement);
-                        
-                        let propElementvalue = propElement.value
-                        console.log("Element with ID '" + propElementId + "':", propElement);
-                        let actul_value = propElement;
-                        console.log("actul_value",propElementvalue);
+      xhr.open('GET', url, true);
+      xhr.onreadystatechange = function() {
+          if (xhr.readyState === 4) {
+              if (xhr.status === 200) {
+                  const reslistvalues = JSON.parse(xhr.responseText);
+                  console.log("return values");
+                  console.log(reslistvalues);
 
-                        if (propElement) {
-                            if (propElement.tagName === 'SELECT') {
-                                
-                            
+                  reslistvalues.forEach(function(list_value) {
+                      const prop_id = list_value[1]
+                      console.log("Processing prop:", prop_id);
+                      console.log(list_value[2]);
+                      
+                      
 
-                                // Add new options
-                                
-                                    let option = document.createElement('option');
-                                    option.value =list_value[2];
-                                    option.textContent =list_value[2];
-                                    if (actul_value == list_value[2]){
-                                        option.selected = true;
-                                    }
-                                       
-                                    
-                                    propElement.appendChild(option);
-                                    console.log("propelement1...");
-                                    console.log(propElement);
-                                    
-                                
-                            // Reapply the saved current value if it still exists in the updated options
-                            
 
-                                    
-                            } else {
-                                console.error('Element with ID ' + propElementId + ' is not a SELECT element.');
+                      // Construct the element ID using prop_id
+                      const propElementId = prop_id; // prop_id as key
+                      console.log("printingpropElementId");
+                      console.log(propElementId);
+                      const propElement = document.getElementById(propElementId);
+                      
+                      console.log("printing propelement");
+                      console.log(propElement);
+                      
+                      let propElementvalue = propElement.value
+                      console.log("Element with ID '" + propElementId + "':", propElement);
+                      let actul_value = propElementvalue;
+                      console.log("actul_value",propElementvalue);
+
+                      if (propElement) {
+                          if (propElement.tagName === 'SELECT') {
+                              
+                          
+
+                              // Add new options
+                              
+                                  let option = document.createElement('option');
+                                  option.value =list_value[2];
+                                  option.textContent =list_value[2];
+                                  if (actul_value == list_value[2]){
+                                      option.selected = true;
+                                  }
+                                  else {
+                                      propElement.appendChild(option);
+
+                                  }
+                                     
+                                  
+                                  
+                                  console.log("propelement1...");
+                                  console.log(propElement);
+                                  
+                              
+                          // Reapply the saved current value if it still exists in the updated options
+                          
+
+                                  
+                          } else {
+                              console.error('Element with ID ' + propElementId + ' is not a SELECT element.');
+                          }
+                      } else {
+                          console.error('Element with ID ' + propElementId + ' not found.');
+                      }
+                      
+                  });
+              } else {
+                  console.error('Error fetching properties options:', xhr.statusText);
+              }
+          }
+      };
+      xhr.onerror = function() {
+          console.error('Network error while fetching properties options.');
+      };
+      xhr.send();
+      }
+
+    function getPropertiesOptions_bkp1(prop_id) {
+    const xhr = new XMLHttpRequest();
+    const url = `/get_properties_options?prop_id=${encodeURIComponent(prop_id)}`;
+
+    xhr.open('GET', url, true);
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+                const reslistvalues = JSON.parse(xhr.responseText);
+                const uniqueOptions = new Set(); // To store unique options
+
+                reslistvalues.forEach(function(list_value) {
+                    const propElement = document.getElementById(list_value[1]);
+
+                    if (propElement && propElement.tagName === 'SELECT') {
+                        // Clear previous options if it is the first element to process
+                        if (!uniqueOptions.size) {
+                            while (propElement.firstChild) {
+                                propElement.removeChild(propElement.firstChild);
                             }
-                        } else {
-                            console.error('Element with ID ' + propElementId + ' not found.');
                         }
-                        
-                    });
-                } else {
-                    console.error('Error fetching properties options:', xhr.statusText);
-                }
+
+                        // Add unique options
+                        if (!uniqueOptions.has(list_value[2])) {
+                            uniqueOptions.add(list_value[2]);
+                            let option = document.createElement('option');
+                            option.value = list_value[2];
+                            option.textContent = list_value[2];
+                            propElement.appendChild(option);
+                            if (actul_value == list_value[2]){
+                                option.selected = true;
+                            }
+                               
+                            else {
+                                propElement.appendChild(option);
+                             }
+
+                            
+                        }
+                    } else {
+                        console.error('Element with ID ' + list_value[1] + ' is not a SELECT element or not found.');
+                    }
+                });
+            } else {
+                console.error('Error fetching properties options:', xhr.statusText);
             }
-        };
-        xhr.onerror = function() {
-            console.error('Network error while fetching properties options.');
-        };
-        xhr.send();
         }
+    };
+    xhr.onerror = function() {
+        console.error('Network error while fetching properties options.');
+    };
+    xhr.send();
+}
+
 
 
 

@@ -1,3 +1,4 @@
+
 from flask import Flask, request, jsonify, render_template
 import json
 import mysql.connector
@@ -220,11 +221,13 @@ def get_properties_options():
     try:
         cnx = cnxpool.get_connection()
         cursor = cnx.cursor()
-        res_unique_id = request.args.get('res_unique_id')
-        print(res_unique_id)
+        prop_id = request.args.get('prop_id')
+        print(prop_id)
         print("......test qry.......")
-        query = "select tr_template_load.res_unique_id ,tr_template_load.prop_id, res_prop_list_value.list_value from tr_template_load left join res_prop_list_value on tr_template_load.prop_id = res_prop_list_value.res_prop_id where tr_template_load.res_unique_id ='" + str(res_unique_id) + "'order by tr_template_load.res_unique_id ;"
+        query = "select tr_template_load.res_unique_id ,tr_template_load.prop_id, res_prop_list_value.list_value from tr_template_load  join res_prop_list_value on tr_template_load.prop_id = res_prop_list_value.res_prop_id where tr_template_load.prop_id ='" + str(prop_id) + "' ;"
+        print(query)
         cursor.execute(query)
+
         reslistvalues = cursor.fetchall()
         print(reslistvalues)
         return reslistvalues
@@ -249,4 +252,3 @@ def get_properties_options():
  
 if __name__ == '__main__':
     app.run(debug=True)
-
